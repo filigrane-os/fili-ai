@@ -14,7 +14,6 @@
 // disappears. Nothing is read from the credentials of the agent: the limits come from the Claude Code status line.
 // One process per event, without jq or niri msg (niri socket directly): ~1 ms.
 #[allow(dead_code)]
-#[path = "../../bar-stats/src/i18n.rs"]
 mod i18n;
 mod json;
 

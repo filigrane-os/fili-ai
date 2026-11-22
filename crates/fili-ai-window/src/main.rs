@@ -1,5 +1,6 @@
 // fili-ai-window: the window of Lia, the assistant of Filigrane (drawer on the right edge, layer-shell).
 // The daemon (fili-ai-daemon) keeps the sessions; this window shows them and sends the messages.
+mod icons;
 mod link;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QString, QUrl};

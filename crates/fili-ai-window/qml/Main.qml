@@ -26,6 +26,9 @@ Window {
     LayerShell.Window.exclusionZone: viewWidth + gap
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityOnDemand
 
+    FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/Jost-Variable.ttf" }
+    FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/JetBrainsMono-Variable.ttf" }
+    FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/FiliIcons.ttf" }
     Component.onCompleted: Chat.connectNow()
 
     FocusScope {
@@ -90,47 +93,82 @@ Window {
                     Layout.fillHeight: true
                     spacing: 0
 
-                    // Sessions: the 20 most recent; dot = waiting (sand) or finished and unread (green)
+                    // Session rail (52 px): the icon of the application the session is linked to, else the glyph of its topic,
+                    // else a speech bubble. Dot: waiting (danger), working (blue), finished and unread (green). Hover: the
+                    // title and the application, and an × to archive.
                     Rectangle {
+                        id: rail
                         visible: Chat.tabsOpen
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 140
+                        Layout.preferredWidth: 52
                         color: Theme.backgroundDeep
+                        HoverHandler { id: railHover }
+                        property string tipText: ""
+                        property real tipY: 0
                         ListView {
-                            anchors.fill: parent
+                            id: sessions
+                            anchors { fill: parent; rightMargin: Theme.borderWidth }
+                            topMargin: Theme.space2
                             clip: true
-                            model: Chat.sessions.slice(0, 20)
+                            boundsBehavior: Flickable.StopAtBounds
+                            model: Chat.tabSessions
                             delegate: Rectangle {
                                 id: row
                                 required property var modelData
                                 readonly property bool sel: modelData.id === Chat.current
                                 readonly property string st: Chat.states[modelData.id] ?? "idle"
-                                width: ListView.view.width
-                                height: 32
-                                color: sel ? Theme.surfaceHover : rowHover.hovered ? Theme.surface : "transparent"
-                                HoverHandler { id: rowHover }
-                                Rectangle {
-                                    id: dot
-                                    x: Theme.space2; anchors.verticalCenter: parent.verticalCenter
-                                    width: 8; height: 8; radius: 4
-                                    visible: row.st === "waiting" || Chat.unread[row.modelData.id] === true || row.st !== "idle"
-                                    color: row.st === "waiting" ? Theme.warning : Chat.unread[row.modelData.id] ? Theme.success : Theme.muted
+                                readonly property string appKey: (modelData.link ?? "").split("\n")[0]
+                                readonly property string appIcon: appKey === "" ? "" : Link.iconPath(appKey)
+                                readonly property int topic: modelData.icon ?? 0
+                                width: sessions.width
+                                height: 48
+                                color: sel || rowHover.hovered ? Theme.surfaceHover : "transparent"
+                                HoverHandler {
+                                    id: rowHover
+                                    onHoveredChanged: {
+                                        if (hovered) {
+                                            rail.tipText = (row.modelData.title || qsTr("New session")) + (row.appKey !== "" ? "\n" + row.appKey : "");
+                                            rail.tipY = row.mapToItem(rail, 0, 0).y;
+                                        }
+                                    }
+                                }
+                                Image {
+                                    anchors.centerIn: parent
+                                    width: 28; height: 28
+                                    visible: row.topic === 0 && row.appIcon !== ""
+                                    source: row.appIcon !== "" ? "file://" + row.appIcon : ""
+                                    sourceSize: Qt.size(56, 56)
+                                    fillMode: Image.PreserveAspectFit
+                                    asynchronous: true
                                 }
                                 Text {
-                                    anchors { left: parent.left; leftMargin: Theme.space2 + 14; right: parent.right; rightMargin: archive.visible ? 26 : Theme.space2; verticalCenter: parent.verticalCenter }
-                                    text: row.modelData.title || qsTr("New session")
-                                    elide: Text.ElideRight
+                                    anchors.centerIn: parent
+                                    visible: row.topic !== 0 || row.appIcon === ""
+                                    text: String.fromCodePoint(row.topic !== 0 ? row.topic : 0xF05A3)
                                     color: row.sel ? Theme.text : Theme.textSecondary
-                                    font { family: Theme.font; pixelSize: Theme.sizeList }
+                                    font { family: Theme.icons; pixelSize: 24 }
                                 }
-                                MouseArea { anchors.fill: parent; onClicked: Chat.openSession(row.modelData.id) }
-                                IconButton {
-                                    id: archive
+                                Rectangle {
+                                    anchors { right: parent.right; rightMargin: Theme.space2; top: parent.top; topMargin: Theme.space2 }
+                                    width: 10; height: 10; radius: 5
+                                    visible: color.a > 0
+                                    color: row.st === "waiting" ? Theme.danger : row.st !== "idle" ? Theme.working : Chat.unread[row.modelData.id] ? Theme.success : "transparent"
+                                    border { width: 2; color: Theme.backgroundDeep }
+                                }
+                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Chat.openSession(row.modelData.id) }
+                                Text {
+                                    anchors { left: parent.left; leftMargin: Theme.space1 + 2; top: parent.top }
                                     visible: rowHover.hovered
-                                    anchors { right: parent.right; rightMargin: 2; verticalCenter: parent.verticalCenter }
-                                    implicitWidth: 22; implicitHeight: 22
-                                    glyph: "×"; tip: qsTr("Archive")
-                                    onClicked: Chat.archive(row.modelData.id)
+                                    text: "×"
+                                    color: archiveHit.containsMouse ? Theme.danger : Theme.textSecondary
+                                    font { family: Theme.font; pixelSize: 16 }
+                                    MouseArea {
+                                        id: archiveHit
+                                        anchors { fill: parent; margins: -6 }
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: Chat.archive(row.modelData.id)
+                                    }
                                 }
                             }
                         }
@@ -199,6 +237,26 @@ Window {
                         }
                     }
                     }
+                }
+            }
+
+            // Tooltip of a session of the rail (title and linked application), beside the rail
+            Rectangle {
+                visible: rail.visible && rail.tipText !== "" && railHover.hovered
+                x: 52 + Theme.space1
+                y: Math.max(Theme.space1, Math.min(parent.height - height - Theme.space1, rail.tipY))
+                width: Math.min(tipLabel.implicitWidth + 2 * Theme.space2, parent.width - 52 - 2 * Theme.space1)
+                height: tipLabel.implicitHeight + 2 * Theme.space1
+                radius: Theme.radiusControl
+                color: Theme.surfaceHover
+                border { color: Theme.border; width: Theme.borderWidth }
+                Text {
+                    id: tipLabel
+                    anchors { fill: parent; margins: Theme.space1; leftMargin: Theme.space2; rightMargin: Theme.space2 }
+                    text: rail.tipText
+                    wrapMode: Text.Wrap
+                    color: Theme.text
+                    font { family: Theme.font; pixelSize: Theme.sizeList }
                 }
             }
         }

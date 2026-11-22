@@ -11,6 +11,8 @@ fn main() {
             .depend("QtQuick.Controls")
             .depend("QtQuick.Layouts"),
     )
+    // Fonts of the interface travel with the binary: the application looks the same on any distribution
+    .qrc_resources(["fonts/Jost-Variable.ttf", "fonts/JetBrainsMono-Variable.ttf", "fonts/FiliIcons.ttf"])
     .qt_module("Quick")
     .files(["src/link.rs"])
     .build();

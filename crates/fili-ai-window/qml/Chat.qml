@@ -18,6 +18,14 @@ QtObject {
     property var unread: ({})
     property bool tabsOpen: true
     property var queued: ({})
+    // Rail: the 20 most recent sessions (the current one replaces the last when it is older)
+    readonly property var tabSessions: {
+        const t = sessions.slice(0, 20);
+        const cur = sessions.find(x => x.id === current);
+        if (cur && !t.includes(cur))
+            t[t.length - 1] = cur;
+        return t;
+    }
     readonly property var log: items[current] ?? []
     readonly property bool working: (states[current] ?? "idle") !== "idle"
     readonly property bool linked: Link.connected

@@ -17,9 +17,11 @@ QtObject {
     readonly property color danger: "#c98f93"
     readonly property color success: "#a3bfa8"
     readonly property color accent: "#d2bf92"
+    readonly property color working: "#9dbbd6"
 
     readonly property string font: "Jost"
     readonly property string mono: "JetBrains Mono"
+    readonly property string icons: "Fili Icons"
     readonly property int size: 14
     readonly property int sizeList: 13
     readonly property int sizeSmall: 12

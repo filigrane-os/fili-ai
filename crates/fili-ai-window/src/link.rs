@@ -38,6 +38,10 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "socketPath"]
         fn socket_path(self: &Link) -> QString;
+        // Path of the icon of an application (icon theme, then hicolor, then pixmaps), "" when there is none
+        #[qinvokable]
+        #[cxx_name = "iconPath"]
+        fn icon_path(self: &Link, name: &QString) -> QString;
         #[qinvokable]
         fn env(self: &Link, name: &QString) -> QString;
         // Starts a program without waiting for it (the daemon, `fili-ai-session`, notifications)
@@ -49,6 +53,7 @@ pub mod qobject {
 }
 
 use cxx_qt_lib::QString;
+
 
 #[derive(Default)]
 pub struct LinkRust {
@@ -98,6 +103,10 @@ impl qobject::Link {
 
     fn socket_path(&self) -> QString {
         QString::from(&socket())
+    }
+
+    fn icon_path(&self, name: &QString) -> QString {
+        QString::from(&crate::icons::find(&name.to_string()).unwrap_or_default())
     }
 
     fn env(&self, name: &QString) -> QString {

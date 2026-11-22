@@ -40,6 +40,8 @@ install-data:
 	install -Dm644 data/fili-ai.desktop $(DESTDIR)$(DATADIR)/applications/fili-ai.desktop
 	if [ -d data/icons ]; then cp -r data/icons $(DESTDIR)$(DATADIR)/; fi
 	install -Dm644 fili-ai.toml $(DESTDIR)$(DATADIR)/doc/fili-ai/fili-ai.toml
+	install -Dm644 lib/i18n.sh $(DESTDIR)$(DATADIR)/fili-ai/lib/i18n.sh
+	install -Dm644 lib/i18n/fr.sh $(DESTDIR)$(DATADIR)/fili-ai/lib/i18n/fr.sh
 	install -Dm644 data/prompts/chat-prompt.md $(DESTDIR)$(DATADIR)/fili-ai/chat-prompt.md
 	install -Dm644 data/prompts/lia/_default.md $(DESTDIR)$(DATADIR)/fili-ai/lia/_default.md
 	install -Dm644 LICENSE $(DESTDIR)$(DATADIR)/licenses/fili-ai/LICENSE

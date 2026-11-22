@@ -43,13 +43,16 @@ export PATH="$BIN:$PATH"
 FILI_AI="" FILI_AI_MODEL="" FILI_AI_ARGS="" FILI_AI_WORKDIR="$HOME/work" FILIGRANE_DIR=""
 # shellcheck source=/dev/null
 [ -f "$CONF" ] && . "$CONF"
-# Repository: this script is a link to <repository>/dotfiles/home/.local/bin/fili-ai
-[ -n "$FILIGRANE_DIR" ] || FILIGRANE_DIR="$(cd "$(dirname "$(readlink -f "$0")")/../../../.." && pwd)"
+# The Filigrane repository (FILIGRANE_DIR of ai.env, written by bootstrap.sh); empty on a machine without one
 export FILIGRANE_DIR
 
-# Messages are written in English; lib/i18n/<lang>.sh translates them (see lib/i18n.sh)
-FILI_LIB="$FILIGRANE_DIR/lib"
-if [ -r "$FILI_LIB/i18n.sh" ]; then
+# Messages are written in English; lib/i18n/<lang>.sh translates them (see lib/i18n.sh): the catalog of the package
+# (share/fili-ai/lib), else the one of the repository
+FILI_LIB=""
+for d in "${XDG_DATA_HOME:-$HOME/.local/share}/fili-ai/lib" /usr/local/share/fili-ai/lib /usr/share/fili-ai/lib "$(dirname "$(readlink -f "$0")")/../lib"; do
+    [ -r "$d/i18n.sh" ] && { FILI_LIB="$d"; break; }
+done
+if [ -n "$FILI_LIB" ]; then
     # shellcheck source=lib/i18n.sh
     . "$FILI_LIB/i18n.sh"
 else

@@ -41,7 +41,7 @@ Item {
                 visible: bubble.isAsk && modelData.status === "pending"
                 spacing: Theme.space2
                 Repeater {
-                    model: [{ t: qsTr("Allow"), v: true }, { t: qsTr("Deny"), v: false }]
+                    model: [{ t: Link.tr("Allow"), v: true }, { t: Link.tr("Deny"), v: false }]
                     Rectangle {
                         required property var modelData
                         implicitWidth: btn.implicitWidth + Theme.space4
@@ -56,7 +56,7 @@ Item {
             }
             Text {
                 visible: bubble.isAsk && modelData.status !== "pending"
-                text: modelData.status === "allowed" || modelData.status === "allow" ? qsTr("Allowed") : qsTr("Denied")
+                text: modelData.status === "allowed" || modelData.status === "allow" ? Link.tr("Allowed") : Link.tr("Denied")
                 color: Theme.muted
                 font { family: Theme.font; pixelSize: Theme.sizeSmall }
             }

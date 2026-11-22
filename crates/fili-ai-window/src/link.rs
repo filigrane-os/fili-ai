@@ -102,6 +102,9 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "setUiState"]
         fn set_ui_state(self: &Link, key: &QString, value: &QString);
+        // Translation of a text written in English (see i18n.rs)
+        #[qinvokable]
+        fn tr(self: &Link, text: &QString) -> QString;
         #[qinvokable]
         fn version(self: &Link) -> QString;
         #[qinvokable]
@@ -303,6 +306,10 @@ impl qobject::Link {
         let dir = std::env::var("XDG_STATE_HOME").unwrap_or_else(|_| format!("{}/.local/state", std::env::var("HOME").unwrap_or_default()));
         let _ = std::fs::create_dir_all(format!("{dir}/filigrane/fili-ai/ui"));
         let _ = std::fs::write(format!("{dir}/filigrane/fili-ai/ui/{}", key.to_string().replace('/', "_")), value.to_string());
+    }
+
+    fn tr(&self, text: &QString) -> QString {
+        QString::from(&crate::i18n::tr(&text.to_string()))
     }
 
     fn version(&self) -> QString {

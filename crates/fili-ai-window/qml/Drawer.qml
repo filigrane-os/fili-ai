@@ -121,13 +121,13 @@ Window {
                         }
                         Text {
                             visible: Chat.working
-                            text: Chat.waiting ? qsTr("waiting for you") : qsTr("working")
+                            text: Chat.waiting ? Link.tr("waiting for you") : Link.tr("working")
                             color: Chat.waiting ? Theme.warning : Theme.textSecondary
                             font { family: Theme.font; pixelSize: Theme.sizeSmall }
                         }
-                        IconButton { glyph: "≡"; tip: qsTr("Sessions"); on: Chat.tabsOpen; onClicked: Chat.tabsOpen = !Chat.tabsOpen }
-                        IconButton { glyph: "+"; tip: qsTr("New session"); onClicked: Chat.newSession() }
-                        IconButton { glyph: "×"; tip: qsTr("Close"); onClicked: Chat.hide() }
+                        IconButton { glyph: "≡"; tip: Link.tr("Sessions"); on: Chat.tabsOpen; onClicked: Chat.tabsOpen = !Chat.tabsOpen }
+                        IconButton { glyph: "+"; tip: Link.tr("New session"); onClicked: Chat.newSession() }
+                        IconButton { glyph: "×"; tip: Link.tr("Close"); onClicked: Chat.hide() }
                     }
                     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.borderWidth; color: Theme.border }
                 }
@@ -171,7 +171,7 @@ Window {
                                     id: rowHover
                                     onHoveredChanged: {
                                         if (hovered) {
-                                            rail.tipText = (row.modelData.title || qsTr("New session")) + (row.appKey !== "" ? "\n" + row.appKey : "");
+                                            rail.tipText = (row.modelData.title || Link.tr("New session")) + (row.appKey !== "" ? "\n" + row.appKey : "");
                                             rail.tipY = row.mapToItem(rail, 0, 0).y;
                                         }
                                     }
@@ -222,7 +222,7 @@ Window {
                             anchors { left: parent.left; right: parent.right; bottom: parent.bottom; rightMargin: Theme.borderWidth }
                             Rectangle { width: parent.width; height: Theme.borderWidth; color: Theme.border }
                             Repeater {
-                                model: [{ glyph: 0xF2F00, tip: qsTr("All sessions"), act: "all" }, { glyph: 0xF2F01, tip: qsTr("Settings…"), act: "settings" }]
+                                model: [{ glyph: 0xF2F00, tip: Link.tr("All sessions"), act: "all" }, { glyph: 0xF2F01, tip: Link.tr("Settings…"), act: "settings" }]
                                 Rectangle {
                                     id: fbtn
                                     required property var modelData
@@ -292,7 +292,7 @@ Window {
                                     Text {
                                         anchors { fill: parent; leftMargin: Theme.space3; rightMargin: Theme.space3 }
                                         verticalAlignment: Text.AlignVCenter
-                                        text: (modelData.archived ? "⌫ " : "") + (modelData.title || qsTr("New session"))
+                                        text: (modelData.archived ? "⌫ " : "") + (modelData.title || Link.tr("New session"))
                                         elide: Text.ElideRight
                                         color: modelData.archived ? Theme.muted : Theme.text
                                         font { family: Theme.font; pixelSize: Theme.sizeList }
@@ -304,7 +304,7 @@ Window {
                         Text {
                             anchors.centerIn: parent
                             visible: !Chat.agentOk || (Chat.log.length === 0 && Chat.live === "")
-                            text: !Chat.linked ? qsTr("Connecting…") : !Chat.agentOk ? qsTr("No agent installed (fili-ai install)") : qsTr("Ask Lia")
+                            text: !Chat.linked ? Link.tr("Connecting…") : !Chat.agentOk ? Link.tr("No agent installed (fili-ai install)") : Link.tr("Ask Lia")
                             color: Theme.muted
                             font { family: Theme.font; pixelSize: Theme.size }
                         }
@@ -324,13 +324,13 @@ Window {
                             anchors { fill: parent; leftMargin: Theme.space3; rightMargin: Theme.space2 }
                             Text {
                                 Layout.fillWidth: true
-                                text: qsTr("Archive this session?")
+                                text: Link.tr("Archive this session?")
                                 elide: Text.ElideRight
                                 color: Theme.text
                                 font { family: Theme.font; pixelSize: Theme.sizeList }
                             }
                             Repeater {
-                                model: [{ t: qsTr("Archive"), v: true }, { t: qsTr("Cancel"), v: false }]
+                                model: [{ t: Link.tr("Archive"), v: true }, { t: Link.tr("Cancel"), v: false }]
                                 Rectangle {
                                     required property var modelData
                                     implicitWidth: lbl.implicitWidth + Theme.space4

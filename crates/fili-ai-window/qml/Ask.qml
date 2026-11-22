@@ -66,7 +66,7 @@ Window {
                 Text { text: String.fromCodePoint(0xf06a9); color: Theme.working; font { family: Theme.icons; pixelSize: 16 } }
                 Text {
                     Layout.fillWidth: true
-                    text: ask.appId ? qsTr("Lia, about %1").arg(ask.appId) : "Lia"
+                    text: ask.appId ? Link.tr("Lia, about %1").replace("%1", ask.appId) : "Lia"
                     elide: Text.ElideRight
                     color: Theme.textSecondary
                     font { family: Theme.font; pixelSize: Theme.sizeSmall; weight: Theme.weightAccent }
@@ -82,7 +82,7 @@ Window {
                 clip: true
                 Text {
                     visible: !input.text
-                    text: qsTr("Ask anything about this application…")
+                    text: Link.tr("Ask anything about this application…")
                     color: Theme.muted
                     font: input.font
                     elide: Text.ElideRight
@@ -99,7 +99,7 @@ Window {
             }
             Text {
                 Layout.fillWidth: true
-                text: qsTr("Enter to send · Shift+Enter to send without opening the drawer · Esc to cancel")
+                text: Link.tr("Enter to send · Shift+Enter to send without opening the drawer · Esc to cancel")
                 elide: Text.ElideRight
                 color: Theme.muted
                 font { family: Theme.font; pixelSize: Theme.sizeSmall }

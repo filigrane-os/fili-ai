@@ -261,11 +261,11 @@ QtObject {
     function notifyAsk(id, rid, tool, summary) {
         runDetached('r="$(notify-send -a fili-ai -i fili-ai -u critical -t 120000 -h "string:x-fili-ai-rid:$2" -A allow="$5" -A deny="$6" -A default="$7" "$3" "$4")"\n'
                     + 'case "$r" in allow) exec "$0" act answer "$2:yes" ;; deny) exec "$0" act answer "$2:no" ;; default) exec "$0" act open "$1" ;; esac',
-                    [id, rid, qsTr("Lia needs you") + " · " + sessionTitle(id), (tool ? tool + ": " : "") + summary, qsTr("Allow"), qsTr("Deny"), qsTr("Open")]);
+                    [id, rid, Link.tr("Lia needs you") + " · " + sessionTitle(id), (tool ? tool + ": " : "") + summary, Link.tr("Allow"), Link.tr("Deny"), Link.tr("Open")]);
     }
     function notify(id, summary, urgency) {
         runDetached('r="$(notify-send -a fili-ai -i fili-ai -u "$2" -A default="$5" "$3" "$4")" && [ "$r" = default ] && exec "$0" act open "$1"',
-                    [id, urgency, summary, sessionTitle(id), qsTr("Open")]);
+                    [id, urgency, summary, sessionTitle(id), Link.tr("Open")]);
     }
 
     // ───── state for the shell (docs/api.md, "The assistant") ─────
@@ -300,7 +300,7 @@ QtObject {
     readonly property var log: items[current] ?? []
     readonly property bool working: (states[current] ?? "idle") !== "idle"
     readonly property bool linked: Link.connected
-    readonly property string title: sessions.find(s => s.id === current)?.title || qsTr("New session")
+    readonly property string title: sessions.find(s => s.id === current)?.title || Link.tr("New session")
     readonly property bool waiting: log.some(i => i.kind === "ask" && i.status === "pending")
 
     function send_(obj) {
@@ -338,7 +338,7 @@ QtObject {
         if (!t && !attached.length)
             return;
         if (attached.length) {
-            t = (t || qsTr("Here are some files.")) + "\n\n" + qsTr("Attached files:") + "\n" + attached.join("\n");
+            t = (t || Link.tr("Here are some files.")) + "\n\n" + Link.tr("Attached files:") + "\n" + attached.join("\n");
             attached = [];
         }
         followPending = false;
@@ -521,10 +521,10 @@ QtObject {
                 const u = Object.assign({}, unread);
                 u[ev.id] = true;
                 unread = u;
-                notify(ev.id, qsTr("Lia has finished"), "normal");
+                notify(ev.id, Link.tr("Lia has finished"), "normal");
             }
         } else if (ev.ev === "note") {
-            append(ev.id, { kind: "note", text: ev.code === "interrupted" ? qsTr("Interrupted") : ev.code, name: "" });
+            append(ev.id, { kind: "note", text: ev.code === "interrupted" ? Link.tr("Interrupted") : ev.code, name: "" });
         }
     }
     property Connections feed: Connections {

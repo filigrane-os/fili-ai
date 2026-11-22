@@ -1,6 +1,7 @@
 // fili-ai-window: the window of Lia, the assistant of Filigrane (drawer on the right edge, layer-shell).
 // The daemon (fili-ai-daemon) keeps the sessions; this window shows them and sends the messages.
 mod ctl;
+mod i18n;
 mod icons;
 mod logs;
 mod link;

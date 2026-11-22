@@ -69,7 +69,7 @@ Rectangle {
     // The problem: the lines selected in the panel, else the last ones; Lia is asked to look at it (fili-incident)
     function askLia() {
         const id = Link.reportProblem(edit.selectedText);
-        note = id !== "" ? qsTr("Lia was asked to look at it") : qsTr("Could not record the problem");
+        note = id !== "" ? Link.tr("Lia was asked to look at it") : Link.tr("Could not record the problem");
         noteTimer.restart();
     }
     Timer {
@@ -134,14 +134,14 @@ Rectangle {
                 height: 22
                 verticalAlignment: Text.AlignVCenter
                 rightPadding: Theme.space2
-                text: qsTr("Debug logs")
+                text: Link.tr("Debug logs")
                 font.family: Theme.font
                 font.pixelSize: Theme.size
                 font.weight: Theme.weightAccent
                 color: Theme.text
             }
             Repeater {
-                model: [qsTr("All"), qsTr("Warnings"), qsTr("Errors")]
+                model: [Link.tr("All"), Link.tr("Warnings"), Link.tr("Errors")]
                 TextButton {
                     required property string modelData
                     required property int index
@@ -154,21 +154,21 @@ Rectangle {
                 height: 22
                 verticalAlignment: Text.AlignVCenter
                 leftPadding: Theme.space2
-                text: panel.note !== "" ? panel.note : panel.shown + " " + qsTr("entries")
+                text: panel.note !== "" ? panel.note : panel.shown + " " + Link.tr("entries")
                 font.family: Theme.font
                 font.pixelSize: Theme.sizeSmall
                 color: panel.note !== "" ? Theme.accent : Theme.muted
             }
-            TextButton { label: qsTr("Ask Lia"); onClicked: panel.askLia() }
-            TextButton { label: qsTr("Copy"); onClicked: panel.copy() }
+            TextButton { label: Link.tr("Ask Lia"); onClicked: panel.askLia() }
+            TextButton { label: Link.tr("Copy"); onClicked: panel.copy() }
             TextButton {
-                label: qsTr("Clear")
+                label: Link.tr("Clear")
                 onClicked: {
                     Link.clearLogs();
                     panel.reset();
                 }
             }
-            TextButton { label: qsTr("Open file"); onClicked: Link.openPath(Link.logFile()) }
+            TextButton { label: Link.tr("Open file"); onClicked: Link.openPath(Link.logFile()) }
             TextButton { label: "×"; onClicked: panel.open = false }
         }
     }
@@ -200,5 +200,5 @@ Rectangle {
         anchors { top: flick.top; bottom: flick.bottom; right: flick.right }
     }
     Accessible.role: Accessible.Pane
-    Accessible.name: qsTr("Debug logs")
+    Accessible.name: Link.tr("Debug logs")
 }

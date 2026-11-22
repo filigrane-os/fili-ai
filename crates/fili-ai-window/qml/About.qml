@@ -24,15 +24,15 @@ Window {
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityOnDemand
 
     readonly property var rows: [
-        [qsTr("Also known as"), "fili-ai"],
-        [qsTr("Part of"), "Filigrane"],
-        [qsTr("Version"), Link.version()],
-        [qsTr("Agent"), (info.agent || "—") + (info.version ? " " + info.version : "")],
-        [qsTr("Model"), info.model || qsTr("default")],
-        [qsTr("Sessions"), String(Chat.sessions.length)],
-        [qsTr("View"), (Chat.mode === "dock" ? qsTr("Dock Beside Windows") : qsTr("Float Above Windows")) + " · " + Chat.viewWidth + " px"],
-        [qsTr("Follow"), Chat.follow],
-        [qsTr("Settings"), "~/.config/filigrane/fili-ai.toml"]
+        [Link.tr("Also known as"), "fili-ai"],
+        [Link.tr("Part of"), "Filigrane"],
+        [Link.tr("Version"), Link.version()],
+        [Link.tr("Agent"), (info.agent || "—") + (info.version ? " " + info.version : "")],
+        [Link.tr("Model"), info.model || Link.tr("default")],
+        [Link.tr("Sessions"), String(Chat.sessions.length)],
+        [Link.tr("View"), (Chat.mode === "dock" ? Link.tr("Dock Beside Windows") : Link.tr("Float Above Windows")) + " · " + Chat.viewWidth + " px"],
+        [Link.tr("Follow"), Chat.follow],
+        [Link.tr("Settings"), "~/.config/filigrane/fili-ai.toml"]
     ]
     function open() {
         // `fili-ai status`: agent, model and version, read once per opening
@@ -69,7 +69,7 @@ Window {
                 spacing: Theme.space3
                 Text { Layout.alignment: Qt.AlignHCenter; text: String.fromCodePoint(0xf06a9); color: Theme.working; font { family: Theme.icons; pixelSize: 64 } }
                 Text { Layout.alignment: Qt.AlignHCenter; text: "Lia"; color: Theme.text; font { family: Theme.font; pixelSize: 28; weight: Theme.weightAccent } }
-                Text { Layout.alignment: Qt.AlignHCenter; text: qsTr("The assistant of Filigrane"); color: Theme.textSecondary; font { family: Theme.font; pixelSize: Theme.size; weight: Font.Light } }
+                Text { Layout.alignment: Qt.AlignHCenter; text: Link.tr("The assistant of Filigrane"); color: Theme.textSecondary; font { family: Theme.font; pixelSize: Theme.size; weight: Font.Light } }
                 Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space2; implicitHeight: 1; color: Theme.border }
                 GridLayout {
                     Layout.fillWidth: true
@@ -89,7 +89,7 @@ Window {
                         }
                     }
                 }
-                Text { Layout.alignment: Qt.AlignHCenter; Layout.topMargin: Theme.space1; text: qsTr("Esc to close"); color: Theme.muted; font { family: Theme.font; pixelSize: Theme.sizeList } }
+                Text { Layout.alignment: Qt.AlignHCenter; Layout.topMargin: Theme.space1; text: Link.tr("Esc to close"); color: Theme.muted; font { family: Theme.font; pixelSize: Theme.sizeList } }
             }
         }
     }

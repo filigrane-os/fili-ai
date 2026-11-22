@@ -17,6 +17,35 @@ QtObject {
     // Sessions whose turn finished while another one was shown
     property var unread: ({})
     property bool tabsOpen: true
+    // Archive being confirmed (session id), "" = none
+    property string confirmId: ""
+    // View: "dock" (windows shrink beside the drawer) or "float" (above them), and the width. Kept in the state file
+    // "MODE WIDTH" (shared with the former drawer), else the defaults of fili-ai.toml, else dock 440
+    readonly property string stateHome: Link.env("XDG_STATE_HOME") || Link.env("HOME") + "/.local/state"
+    readonly property string configHome: Link.env("XDG_CONFIG_HOME") || Link.env("HOME") + "/.config"
+    readonly property string viewFile: stateHome + "/filigrane/chat-view"
+    readonly property string cfgFile: configHome + "/filigrane/fili-ai.toml"
+    property string mode: "dock"
+    property int viewWidth: 440
+    function loadView() {
+        const cfg = {};
+        for (const l of Link.readText(cfgFile).split("\n")) {
+            const m = l.replace(/#.*/, "").match(/^\s*(\w+)\s*=\s*"?([^"\s]*)"?\s*$/);
+            if (m)
+                cfg[m[1]] = m[2];
+        }
+        const st = Link.readText(viewFile).trim().split(/\s+/);
+        const mode = st[0] || cfg.mode;
+        const width = parseInt(st[1]) || parseInt(cfg.width);
+        chat.mode = mode === "float" ? "float" : "dock";
+        chat.viewWidth = clampWidth(width || 440);
+    }
+    function clampWidth(w) {
+        return Math.max(300, Math.min(900, w));
+    }
+    function saveView() {
+        Link.writeText(viewFile, mode + " " + viewWidth + "\n");
+    }
     property var queued: ({})
     // Rail: the 20 most recent sessions (the current one replaces the last when it is older)
     readonly property var tabSessions: {
@@ -78,8 +107,13 @@ QtObject {
         if (current)
             send_({ op: "stop", id: current });
     }
-    function archive(id) {
-        send_({ op: "archive", id });
+    function askArchive(id) {
+        confirmId = id;
+    }
+    function confirmArchive(yes) {
+        if (yes && confirmId)
+            send_({ op: "archive", id: confirmId });
+        confirmId = "";
     }
     function openSession(id) {
         const u = Object.assign({}, unread);

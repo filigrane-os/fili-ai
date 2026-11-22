@@ -9,7 +9,7 @@ import Fili.Ai
 
 Window {
     id: win
-    readonly property int viewWidth: 440
+    readonly property int viewWidth: Chat.viewWidth
     width: viewWidth
     height: 900
     visible: true
@@ -17,19 +17,20 @@ Window {
     title: "Lia"
 
     LayerShell.Window.scope: "fili-ai"
-    LayerShell.Window.layer: LayerShell.Window.LayerTop
+    LayerShell.Window.layer: Chat.mode === "dock" ? LayerShell.Window.LayerTop : LayerShell.Window.LayerOverlay
     LayerShell.Window.anchors: LayerShell.Window.AnchorTop | LayerShell.Window.AnchorBottom | LayerShell.Window.AnchorRight
     // The same gap as between two niri windows (`gaps` of the niri config): margins on the three anchored edges, and the
     // exclusive zone counts the right one so that the windows keep that gap beside the drawer
     readonly property int gap: 16
     LayerShell.Window.margins: ({ left: 0, top: gap, right: gap, bottom: gap })
-    LayerShell.Window.exclusionZone: viewWidth + gap
+    LayerShell.Window.exclusionZone: Chat.mode === "dock" ? viewWidth + gap : 0
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityOnDemand
 
     FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/Jost-Variable.ttf" }
     FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/JetBrainsMono-Variable.ttf" }
     FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/FiliIcons.ttf" }
     Component.onCompleted: {
+        Chat.loadView();
         Link.watchTheme();
         Chat.connectNow();
     }
@@ -37,7 +38,7 @@ Window {
     FocusScope {
         anchors.fill: parent
         focus: true
-        Keys.onEscapePressed: Qt.quit()
+        Keys.onEscapePressed: Chat.confirmId ? Chat.confirmArchive(false) : Qt.quit()
         Keys.onPressed: e => {
             if (!(e.modifiers & Qt.ControlModifier))
                 return;
@@ -45,6 +46,8 @@ Window {
                 Chat.newSession();
             else if (e.key === Qt.Key_Period)
                 Chat.stop();
+            else if ((e.key === Qt.Key_Return || e.key === Qt.Key_Enter) && Chat.confirmId)
+                Chat.confirmArchive(true);
             else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter)
                 Chat.answer(Chat.log.find(i => i.kind === "ask" && i.status === "pending")?.rid ?? "", true);
             else
@@ -170,7 +173,7 @@ Window {
                                         anchors { fill: parent; margins: -6 }
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: Chat.archive(row.modelData.id)
+                                        onClicked: Chat.askArchive(row.modelData.id)
                                     }
                                 }
                             }
@@ -211,6 +214,41 @@ Window {
                             text: !Chat.linked ? qsTr("Connecting…") : !Chat.agentOk ? qsTr("No agent installed (fili-ai install)") : qsTr("Ask Lia")
                             color: Theme.muted
                             font { family: Theme.font; pixelSize: Theme.size }
+                        }
+                    }
+
+                    // Archive confirmation (Enter archives, Escape cancels)
+                    Rectangle {
+                        visible: Chat.confirmId !== ""
+                        Layout.fillWidth: true
+                        Layout.margins: Theme.space2
+                        Layout.bottomMargin: 0
+                        implicitHeight: 40
+                        radius: Theme.radiusControl
+                        color: Theme.surface
+                        border { width: Theme.borderWidth; color: Theme.danger }
+                        RowLayout {
+                            anchors { fill: parent; leftMargin: Theme.space3; rightMargin: Theme.space2 }
+                            Text {
+                                Layout.fillWidth: true
+                                text: qsTr("Archive this session?")
+                                elide: Text.ElideRight
+                                color: Theme.text
+                                font { family: Theme.font; pixelSize: Theme.sizeList }
+                            }
+                            Repeater {
+                                model: [{ t: qsTr("Archive"), v: true }, { t: qsTr("Cancel"), v: false }]
+                                Rectangle {
+                                    required property var modelData
+                                    implicitWidth: lbl.implicitWidth + Theme.space4
+                                    implicitHeight: 26
+                                    radius: Theme.radiusControl
+                                    color: hit.containsMouse ? Theme.surfaceHover : Theme.background
+                                    border { width: Theme.borderWidth; color: Theme.border }
+                                    Text { id: lbl; anchors.centerIn: parent; text: parent.modelData.t; color: Theme.text; font { family: Theme.font; pixelSize: Theme.sizeList } }
+                                    MouseArea { id: hit; anchors.fill: parent; hoverEnabled: true; onClicked: Chat.confirmArchive(parent.modelData.v) }
+                                }
+                            }
                         }
                     }
 
@@ -262,6 +300,21 @@ Window {
                     font { family: Theme.font; pixelSize: Theme.sizeList }
                 }
             }
+        }
+
+        // Resize handle on the left edge: the right edge stays put, the width follows the pointer (double click: 440)
+        MouseArea {
+            anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+            width: Theme.space1 + 4
+            cursorShape: Qt.SizeHorCursor
+            property real pressX: 0
+            onPressed: m => pressX = m.x
+            onPositionChanged: m => {
+                if (pressed)
+                    Chat.viewWidth = Chat.clampWidth(Chat.viewWidth - (m.x - pressX));
+            }
+            onReleased: Chat.saveView()
+            onDoubleClicked: { Chat.viewWidth = 440; Chat.saveView(); }
         }
     }
 }

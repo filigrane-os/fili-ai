@@ -58,6 +58,13 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "iconPath"]
         fn icon_path(self: &Link, name: &QString) -> QString;
+        // Small text files of the user (view state, settings): whole content, "" when absent; write replaces it
+        #[qinvokable]
+        #[cxx_name = "readText"]
+        fn read_text(self: &Link, path: &QString) -> QString;
+        #[qinvokable]
+        #[cxx_name = "writeText"]
+        fn write_text(self: &Link, path: &QString, text: &QString);
         #[qinvokable]
         fn env(self: &Link, name: &QString) -> QString;
         // Starts a program without waiting for it (the daemon, `fili-ai-session`, notifications)
@@ -160,6 +167,18 @@ impl qobject::Link {
 
     fn icon_path(&self, name: &QString) -> QString {
         QString::from(&crate::icons::find(&name.to_string()).unwrap_or_default())
+    }
+
+    fn read_text(&self, path: &QString) -> QString {
+        QString::from(&std::fs::read_to_string(path.to_string()).unwrap_or_default())
+    }
+
+    fn write_text(&self, path: &QString, text: &QString) {
+        let path = std::path::PathBuf::from(path.to_string());
+        if let Some(dir) = path.parent() {
+            let _ = std::fs::create_dir_all(dir);
+        }
+        let _ = std::fs::write(path, text.to_string());
     }
 
     fn env(&self, name: &QString) -> QString {

@@ -77,6 +77,8 @@ pub mod qobject {
         #[cxx_name = "writeText"]
         fn write_text(self: &Link, path: &QString, text: &QString);
         #[qinvokable]
+        fn version(self: &Link) -> QString;
+        #[qinvokable]
         fn env(self: &Link, name: &QString) -> QString;
         // Starts a program without waiting for it (the daemon, `fili-ai-session`, notifications)
         // Runs `sh -c SCRIPT` and gives its output (short commands only: it waits)
@@ -220,6 +222,10 @@ impl qobject::Link {
         if std::fs::write(&tmp, text.to_string()).is_ok() {
             let _ = std::fs::rename(&tmp, &path);
         }
+    }
+
+    fn version(&self) -> QString {
+        QString::from(option_env!("FILI_AI_GIT").unwrap_or(env!("CARGO_PKG_VERSION")))
     }
 
     fn env(&self, name: &QString) -> QString {

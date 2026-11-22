@@ -2,9 +2,15 @@
 use cxx_qt_build::{CxxQtBuilder, QmlFile, QmlModule};
 
 fn main() {
+    // Version of the About card: tag or commit of the repository (absent outside a repository)
+    if let Ok(o) = std::process::Command::new("git").args(["describe", "--tags", "--always", "--dirty"]).output() {
+        if o.status.success() {
+            println!("cargo:rustc-env=FILI_AI_GIT={}", String::from_utf8_lossy(&o.stdout).trim());
+        }
+    }
     CxxQtBuilder::new_qml_module(
         QmlModule::new("Fili.Ai")
-            .qml_files(["qml/Main.qml", "qml/Drawer.qml", "qml/Bubble.qml", "qml/IconButton.qml", "qml/Ask.qml"])
+            .qml_files(["qml/Main.qml", "qml/Drawer.qml", "qml/Bubble.qml", "qml/IconButton.qml", "qml/Ask.qml", "qml/About.qml"])
             .qml_file(QmlFile::from("qml/Theme.qml").singleton(true))
             .qml_file(QmlFile::from("qml/Chat.qml").singleton(true))
             .depend("QtQuick")

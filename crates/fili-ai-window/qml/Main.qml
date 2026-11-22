@@ -7,11 +7,13 @@ QtObject {
     id: root
     property Window drawer: Drawer {}
     property Window field: Ask {}
+    property Window aboutCard: About {}
 
     property Connections wiring: Connections {
         target: Chat
         function onFieldRequested() { root.field.open(); }
         function onFieldClosed() { root.field.close(); }
+        function onAboutRequested() { root.aboutCard.open(); }
     }
     property Connections commands: Connections {
         target: Link
@@ -20,7 +22,7 @@ QtObject {
     // The application lives while the drawer is shown or an agent works for it; then it ends (the daemon stops by itself)
     property Timer lifetime: Timer {
         interval: 600
-        running: !Chat.wantLink && !root.field.shown
+        running: !Chat.wantLink && !root.field.shown && !root.aboutCard.shown
         onTriggered: Qt.quit()
     }
     Component.onCompleted: {

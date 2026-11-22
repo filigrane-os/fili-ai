@@ -413,9 +413,9 @@ fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     match args.first().map(String::as_str) {
         Some("hook") => {
-            // Sessions of the fili-ai drawer (fili-ai-daemon sets FILI_AGENT_IA; FILI_ROB is the name of the sessions started before
-            // the rename): the drawer shows the state itself, neither module nor notification
-            if env::var_os("FILI_AGENT_IA").is_some() || env::var_os("FILI_ROB").is_some() {
+            // Sessions of the fili-ai drawer (fili-ai-daemon sets FILI_AGENT_IA): the drawer shows the state itself, neither module
+            // nor notification
+            if env::var_os("FILI_AGENT_IA").is_some() {
                 return;
             }
             let input = stdin_json();

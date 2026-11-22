@@ -72,7 +72,7 @@ fn chat_dir() -> PathBuf {
 // ───── settings (ai.env) ─────
 struct Conf {
     model: String,
-    rob_model: String, // model of the sessions scoped to an application ("Ask Lia"): short requests, speed matters
+    agent_model: String, // model of the sessions scoped to an application ("Ask the assistant"): short requests, speed matters
     args: Vec<String>,
     dir: String,
 }
@@ -97,12 +97,12 @@ fn conf() -> Conf {
         .map(|a| if let Some(r) = a.strip_prefix('~') { format!("{}{r}", home()) } else { a.to_string() })
         .collect();
     // Absent = sonnet; "default" = the model of the agent (same as FILI_AI_MODEL)
-    let rob_model = match kv.get("FILI_LIA_MODEL").or_else(|| kv.get("FILI_ROB_MODEL")).map(String::as_str) {
+    let agent_model = match kv.get("FILI_AGENT_MODEL").map(String::as_str) {
         None => "sonnet".to_string(),
         Some("default") => get("FILI_AI_MODEL"),
         Some(m) => m.to_string(),
     };
-    Conf { model: get("FILI_AI_MODEL"), rob_model, args, dir }
+    Conf { model: get("FILI_AI_MODEL"), agent_model, args, dir }
 }
 
 // Value of a shell file: 'abc', "abc" or abc\ def
@@ -409,7 +409,7 @@ fn spawn_agent(d: &mut Daemon, id: &str) -> Result<(), String> {
     let mut mcp = Json::obj();
     mcp.set("mcpServers", servers);
     cmd.arg("--mcp-config").arg(mcp.to_string()).args(["--permission-prompt-tool", "mcp__fili__approve"]);
-    let model = if scoped { &c.rob_model } else { &c.model };
+    let model = if scoped { &c.agent_model } else { &c.model };
     if !model.is_empty() {
         cmd.args(["--model", model]);
     }

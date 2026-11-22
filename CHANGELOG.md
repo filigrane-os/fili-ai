@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- The drawer is stuck to the right edge of the screen, and the gap between it and the windows is the one between two windows
+  (`gaps` of niri): the margin of the layer surface is added to its exclusive zone by the compositor, which made the gap twice as large.
+
 ## 0.1.2
 
 - The xbps package replaces the former packages `fili-ai-daemon` and `fili-ai-session` (their programs are part of `fili-ai`

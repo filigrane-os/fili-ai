@@ -19,11 +19,12 @@ Window {
     LayerShell.Window.scope: "fili-ai"
     LayerShell.Window.layer: Chat.mode === "dock" ? LayerShell.Window.LayerTop : LayerShell.Window.LayerOverlay
     LayerShell.Window.anchors: LayerShell.Window.AnchorTop | LayerShell.Window.AnchorBottom | LayerShell.Window.AnchorRight
-    // The same gap as between two niri windows (`gaps` of the niri config): margins on the three anchored edges, and the
-    // exclusive zone counts the right one so that the windows keep that gap beside the drawer
+    // Stuck to the right edge of the screen; the same gap as between two niri windows (`gaps` of the niri config) above and below.
+    // The compositor adds the margin of the anchored edge to the exclusive zone: with no margin on the right, the zone is the width
+    // of the drawer, and the windows stop one `gaps` before it (the gap between two windows).
     readonly property int gap: 16
-    LayerShell.Window.margins: ({ left: 0, top: gap, right: gap, bottom: gap })
-    LayerShell.Window.exclusionZone: Chat.mode === "dock" ? viewWidth + gap : 0
+    LayerShell.Window.margins: ({ left: 0, top: gap, right: 0, bottom: gap })
+    LayerShell.Window.exclusionZone: Chat.mode === "dock" ? viewWidth : 0
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityOnDemand
 
     FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/Jost-Variable.ttf" }

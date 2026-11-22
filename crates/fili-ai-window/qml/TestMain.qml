@@ -89,7 +89,9 @@ QtObject {
         Chat.receive({ ev: "ask", id: "a", rid: "r1", tool: "Bash", summary: "sudo sv restart iwd", status: "pending" });
         ok(Chat.waiting && Chat.log[0].kind === "ask", "ask: the permission is in the log and the session waits");
         ok(Chat.ran.length === 1 && Chat.ran[0].indexOf("r1") >= 0 && Chat.ran[0].indexOf("sudo sv restart iwd") >= 0, "ask: out of sight, a notification asks", JSON.stringify(Chat.ran));
+        Chat.ran = [];
         Chat.receive({ ev: "ask", id: "a", rid: "r1", tool: "Bash", summary: "sudo sv restart iwd", status: "allowed" });
+        ok(Chat.ran.length === 1 && Chat.ran[0].indexOf("Lia needs you") >= 0, "ask: once settled, the notification bubble is closed", JSON.stringify(Chat.ran));
         ok(Chat.log.length === 1 && Chat.log[0].status === "allowed" && !Chat.waiting, "ask: the same request is updated when settled, not added");
         Chat.open = true;
         Chat.ran = [];

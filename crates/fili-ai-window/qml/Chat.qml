@@ -272,10 +272,26 @@ QtObject {
     function sessionTitle(id) {
         return sessions.find(s => s.id === id)?.title || "Lia";
     }
+    // The summaries of the permission notifications shown, by request: the bubble is closed (fili-shell notification dismiss) once
+    // the request is settled, wherever it was answered
+    property var askBubbles: ({})
     function notifyAsk(id, rid, tool, summary) {
+        const title = Link.tr("Lia needs you") + " · " + sessionTitle(id);
+        const b = Object.assign({}, askBubbles);
+        b[rid] = title;
+        askBubbles = b;
         runDetached('r="$(notify-send -a fili-ai -i fili-ai -u critical -t 120000 -h "string:x-fili-ai-rid:$2" -A allow="$5" -A deny="$6" -A default="$7" "$3" "$4")"\n'
                     + 'case "$r" in allow) exec "$0" act answer "$2:yes" ;; deny) exec "$0" act answer "$2:no" ;; default) exec "$0" act open "$1" ;; esac',
-                    [id, rid, Link.tr("Lia needs you") + " · " + sessionTitle(id), (tool ? tool + ": " : "") + summary, Link.tr("Allow"), Link.tr("Deny"), Link.tr("Open")]);
+                    [id, rid, title, (tool ? tool + ": " : "") + summary, Link.tr("Allow"), Link.tr("Deny"), Link.tr("Open")]);
+    }
+    function closeAskBubble(rid) {
+        const title = askBubbles[rid];
+        if (title === undefined)
+            return;
+        const b = Object.assign({}, askBubbles);
+        delete b[rid];
+        askBubbles = b;
+        runDetached('exec fili-shell notification dismiss "$1"', [title]);
     }
     function notify(id, summary, urgency) {
         runDetached('r="$(notify-send -a fili-ai -i fili-ai -u "$2" -A default="$5" "$3" "$4")" && [ "$r" = default ] && exec "$0" act open "$1"',
@@ -533,6 +549,8 @@ QtObject {
             const i = a.findIndex(x => x.kind === "ask" && x.rid === ev.rid);
             if (ev.status === "pending" && i < 0 && !(open && ev.id === current))
                 notifyAsk(ev.id, ev.rid, ev.tool, ev.summary);
+            else if (ev.status !== "pending")
+                closeAskBubble(ev.rid);
             if (i >= 0)
                 a[i] = item(ev);
             else

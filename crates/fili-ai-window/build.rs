@@ -10,7 +10,7 @@ fn main() {
     }
     CxxQtBuilder::new_qml_module(
         QmlModule::new("Fili.Ai")
-            .qml_files(["qml/Main.qml", "qml/Drawer.qml", "qml/Bubble.qml", "qml/IconButton.qml", "qml/Ask.qml", "qml/About.qml", "qml/DebugPanel.qml", "qml/TextButton.qml", "qml/FiliScrollBar.qml", "qml/KineticScroll.qml"])
+            .qml_files(["qml/Main.qml", "qml/Drawer.qml", "qml/Bubble.qml", "qml/IconButton.qml", "qml/Ask.qml", "qml/About.qml", "qml/DebugPanel.qml", "qml/TextButton.qml", "qml/FiliScrollBar.qml", "qml/KineticScroll.qml", "qml/TestMain.qml"])
             .qml_file(QmlFile::from("qml/Theme.qml").singleton(true))
             .qml_file(QmlFile::from("qml/Chat.qml").singleton(true))
             .depend("QtQuick")

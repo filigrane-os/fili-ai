@@ -30,6 +30,8 @@ test:
 	$(CARGO) test --release --locked
 
 check: build test
+	# The logic of the conversation (qml/TestMain.qml), without a screen
+	$(TARGET_DIR)/release/fili-ai-window --test
 	python3 -I scripts/fili-api-lint --app crates/fili-ai-window
 
 install: build install-data

@@ -7,6 +7,12 @@ import Fili.Ai
 
 QtObject {
     id: chat
+    // Tests (`fili-ai-window --test`, qml/TestMain.qml): nothing leaves the process; what would have been sent to the daemon,
+    // run as a command or written for the shell is kept in these lists instead
+    property bool testing: false
+    property var sent: []
+    property var ran: []
+    property var published: []
     property var sessions: []
     // All the sessions, archived ones included (the list of the rail footer)
     property var allSessions: []
@@ -74,6 +80,10 @@ QtObject {
     signal aboutRequested
 
     function readContext() {
+        if (testing) {
+            ctxReady = true;
+            return;
+        }
         let c = null;
         try {
             c = JSON.parse(Link.readText(ctxFile));
@@ -253,6 +263,10 @@ QtObject {
     // ───── notifications (notify-send; the shell shows them) ─────
     // Allow / Deny answer through `fili-ai act answer`, the default action (a click) opens the session
     function runDetached(script, args) {
+        if (testing) {
+            ran = ran.concat([args.join(" | ")]);
+            return;
+        }
         Link.spawn("setsid", ["-f", "sh", "-c", script, "fili-ai"].concat(args).join("\u001f"));
     }
     function sessionTitle(id) {
@@ -269,9 +283,16 @@ QtObject {
     }
 
     // ───── state for the shell (docs/api.md, "The assistant") ─────
+    function uiJson() {
+        return JSON.stringify({ v: 1, open: open, focused: focused, attention: attention, busy: busy });
+    }
     function publishUi() {
+        if (testing) {
+            published = published.concat([uiJson()]);
+            return;
+        }
         const dir = Link.env("XDG_RUNTIME_DIR") || "/tmp";
-        Link.writeText(dir + "/fili/ai/ui.json", JSON.stringify({ v: 1, open: open, focused: focused, attention: attention, busy: busy }));
+        Link.writeText(dir + "/fili/ai/ui.json", uiJson());
     }
     property Timer uiTimer: Timer {
         interval: 40
@@ -299,16 +320,24 @@ QtObject {
     }
     readonly property var log: items[current] ?? []
     readonly property bool working: (states[current] ?? "idle") !== "idle"
-    readonly property bool linked: Link.connected
+    // Connected to the daemon (tests: set by hand)
+    property bool testLinked: false
+    readonly property bool linked: testing ? testLinked : Link.connected
     readonly property string title: sessions.find(s => s.id === current)?.title || Link.tr("New session")
     readonly property bool waiting: log.some(i => i.kind === "ask" && i.status === "pending")
 
     function send_(obj) {
+        if (testing) {
+            sent = sent.concat([obj]);
+            return;
+        }
         Link.write(JSON.stringify(obj));
     }
     // Connects, starting the daemon when nobody listens
     property int tries: 0
     function connectNow() {
+        if (testing)
+            return;
         if (Link.open()) {
             retry.stop();
             send_({ op: "agent" });
@@ -399,6 +428,10 @@ QtObject {
         openSession(id);
     }
     function openSettings() {
+        if (testing) {
+            ran = ran.concat(["xdg-open settings"]);
+            return;
+        }
         Link.spawn("xdg-open", configHome + "/filigrane/fili-ai.toml");
     }
     // Ctrl+V: files (text/uri-list) attached; an image is saved in ~/.local/state/filigrane/chat/images then attached

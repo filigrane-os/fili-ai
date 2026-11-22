@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96"><title>Lia</title>
+<!-- Lia, the assistant of Filigrane: a woman with shoulder-length hair, in thin lines like the other icons of the family (brand
+     colours: nuit tile, voile line, a translucent veil for the hair) -->
+<rect x="4" y="4" width="88" height="88" rx="20" fill="#1c222b"/>
+<g fill="none" stroke="#9dbbd6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+  <!-- hair: a translucent veil from the crown down to the shoulders, with a side parting -->
+  <path d="M48 20 C31 20 23 33 24 49 C25 59 21 65 23 73 C28 71 33 70 37 68 L59 68 C63 70 68 71 73 73 C75 65 71 59 72 49 C73 33 65 20 48 20 Z" fill="#9dbbd6" fill-opacity="0.16"/>
+  <path d="M43 20.5 C41 29 36.5 33 35 41"/>
+  <path d="M43 20.5 C52 22 59.5 28 61 38"/>
+  <!-- face and neck -->
+  <path d="M35 41 C34 52 40 61 48 61 C56 61 62 52 61 38"/>
+  <path d="M43 60 L43 67 M53 60 L53 67"/>
+  <!-- shoulders -->
+  <path d="M20 84 C21 73 31 69 43 67 M76 84 C75 73 65 69 53 67"/>
+</g>
+<!-- eyes and smile, minimal -->
+<g fill="none" stroke="#dbe7f4" stroke-width="2" stroke-linecap="round">
+  <path d="M42 47 L42.01 47 M54 47 L54.01 47"/>
+  <path d="M44.5 54 C47 56 49 56 51.5 54"/>
+</g>
+</svg>

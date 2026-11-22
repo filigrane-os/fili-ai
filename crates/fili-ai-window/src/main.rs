@@ -20,6 +20,20 @@ pub fn command_of(args: &[String]) -> String {
 }
 
 fn main() {
+    // `--test`: the tests of the conversation logic (qml/TestMain.qml), without a screen
+    if std::env::args().nth(1).is_some_and(|a| a == "--test") {
+        // SAFETY: single-threaded at this point, before Qt creates any thread
+        unsafe { std::env::set_var("QT_QPA_PLATFORM", "offscreen") };
+        let mut app = QGuiApplication::new();
+        let mut engine = QQmlApplicationEngine::new();
+        if let Some(engine) = engine.as_mut() {
+            engine.load(&QUrl::from("qrc:/qt/qml/Fili/Ai/qml/TestMain.qml"));
+        }
+        if let Some(app) = app.as_mut() {
+            std::process::exit(app.exec());
+        }
+        return;
+    }
     // `fili-ai ctl ...`: the command line of the running window, before Qt
     if std::env::args().nth(1).is_some_and(|a| a == "ctl") {
         std::process::exit(ctl::run(&std::env::args().skip(2).collect::<Vec<_>>()));

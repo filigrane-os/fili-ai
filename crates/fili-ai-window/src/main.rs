@@ -1,5 +1,6 @@
 // fili-ai-window: the window of Lia, the assistant of Filigrane (drawer on the right edge, layer-shell).
 // The daemon (fili-ai-daemon) keeps the sessions; this window shows them and sends the messages.
+mod ctl;
 mod icons;
 mod link;
 mod theme;
@@ -17,6 +18,10 @@ pub fn command_of(args: &[String]) -> String {
 }
 
 fn main() {
+    // `fili-ai ctl ...`: the command line of the running window, before Qt
+    if std::env::args().nth(1).is_some_and(|a| a == "ctl") {
+        std::process::exit(ctl::run(&std::env::args().skip(2).collect::<Vec<_>>()));
+    }
     if std::env::args().nth(1).is_some_and(|a| a == "-V" || a == "--version") {
         println!("fili-ai-window {}", env!("CARGO_PKG_VERSION"));
         return;

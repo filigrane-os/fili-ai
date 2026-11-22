@@ -70,6 +70,7 @@ QtObject {
     signal focusInput
     signal fieldRequested
     signal fieldClosed
+    signal aboutRequested
 
     function readContext() {
         let c = null;
@@ -212,6 +213,9 @@ QtObject {
         case "new-here": show(); pendingLink = linkKey(ctx, true); newSession(); break;
         case "unlink": if (current) send_({ op: "link", id: current, key: "" }); break;
         case "sessions": show(); tabsOpen = !tabsOpen; break;
+        case "rename": show(); startRename(); break;
+        case "about": aboutRequested(); break;
+        case "settings": openSettings(); break;
         case "stop": stop(); break;
         case "archive": show(); askArchive(current); break;
         case "allow": answerFirst(true); break;

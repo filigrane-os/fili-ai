@@ -9,14 +9,15 @@
 #   fili-ai update            update the installed agents
 #   fili-ai status            agent, model, working directory, repository, installed agents
 #
-# The assistant of the desktop (Rob, the drawer; Mod+Y, Mod+Ctrl+Y) is driven by the same command; the work is done by the
+# The assistant of the desktop (Lia, the drawer; Mod+Y, Mod+Ctrl+Y) is driven by the same command; the work is done by the
 # fili-ai-daemon program, which keeps the agent sessions:
 #   fili-ai toggle            Mod+Y: notes the focused application (fili-context), then shows or hides the drawer
 #   fili-ai show | hide       the drawer, without noting the application (the bar, the notifications)
-#   fili-ai here [TEXT]       Mod+Ctrl+Y, "Ask Rob…": a session scoped to the focused application, TEXT sent if given
+#   fili-ai here [TEXT]       Mod+Ctrl+Y, "Ask Lia…": a session scoped to the focused application, TEXT sent if given
 #   fili-ai ask TEXT          notes the focused application, then asks TEXT in a new session
 #   fili-ai sessions          the sessions as JSON (the daemon must be running)
 #   fili-ai send ID TEXT      message to a session, the reply on the output
+#   fili-ai act NAME [ARG...] an action of the window (the menu of the bar, notifications); `ctl` is the same, for the contract
 #   fili-ai daemon | mcp ID   the daemon (started by the drawer), the permission server of an agent
 #
 # Agents: claude (Claude Code, Anthropic), codex (Codex CLI, OpenAI), ollama (Codex CLI on local Ollama
@@ -28,7 +29,8 @@ set -euo pipefail
 
 # The drawer's commands go straight to the daemon program, before anything else is read (Mod+Y must be quick)
 case "${1:-}" in
-    toggle | show | hide | here | ask | sessions | send | daemon | mcp) PATH="$HOME/.local/bin:$PATH" exec fili-ai-daemon "$@" ;;
+    toggle | show | hide | here | ask | act | sessions | send | daemon | mcp) PATH="$HOME/.local/bin:$PATH" exec fili-ai-daemon "$@" ;;
+    ctl) PATH="$HOME/.local/bin:$PATH" exec fili-ai-window "$@" ;;
 esac
 
 CONF="${XDG_CONFIG_HOME:-$HOME/.config}/filigrane/ai.env"

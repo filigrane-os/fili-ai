@@ -418,7 +418,8 @@ fn spawn_agent(d: &mut Daemon, id: &str) -> Result<(), String> {
     } else {
         cmd.args(&c.args);
     }
-    let prompt = PathBuf::from(&c.dir).join("agents/chat-prompt.md");
+    // The prompt ships with the package (share/fili-ai/chat-prompt.md); the one of the repository is the older place
+    let prompt = package_file("chat-prompt.md").unwrap_or_else(|| PathBuf::from(&c.dir).join("agents/chat-prompt.md"));
     if prompt.exists() {
         cmd.arg("--append-system-prompt-file").arg(prompt);
     }
@@ -715,6 +716,15 @@ fn context_line() -> Option<String> {
         .then(|| format!("[Contexte noté à l'ouverture du chat (application active): {j}]\n\n"))
 }
 
+/// A file shipped by the package: share/fili-ai/<rel> of ~/.local/share (built from source), /usr/local/share, /usr/share
+fn package_file(rel: &str) -> Option<PathBuf> {
+    let data = env::var("XDG_DATA_HOME").unwrap_or_else(|_| format!("{}/.local/share", home()));
+    [data, "/usr/local/share".to_string(), "/usr/share".to_string()]
+        .iter()
+        .map(|d| PathBuf::from(d).join("fili-ai").join(rel))
+        .find(|p| p.is_file())
+}
+
 /// Instruction of a scoped session ("Ask Rob" of an application): the link key is the app_id, then the window title
 fn scope_line(link: &str) -> String {
     let app = link.split('\n').next().unwrap_or("");
@@ -752,9 +762,16 @@ fn scope_brief_in(link: &str, dir: &str, shipped: &[String]) -> String {
     }
     let cfg = env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| format!("{}/.config", home()));
     let read = |f: &str| fs::read_to_string(f).ok();
-    let own = read(&format!("{dir}/agents/rob/{app}.md"))
-        .or_else(|| shipped.iter().rev().find_map(|d| read(&format!("{d}/rob/{app}.md"))));
-    let text: Vec<String> = [read(&format!("{dir}/agents/rob/_default.md")), own, read(&format!("{cfg}/filigrane/rob/{app}.md"))]
+    // The briefs are named lia/ now; the applications that still ship rob/ and the older folders are read as a fallback
+    let first = |names: Vec<String>| names.iter().find_map(|f| read(f));
+    let own = first(vec![format!("{dir}/agents/lia/{app}.md"), format!("{dir}/agents/rob/{app}.md")]).or_else(|| {
+        shipped.iter().rev().find_map(|d| first(vec![format!("{d}/lia/{app}.md"), format!("{d}/rob/{app}.md")]))
+    });
+    let default = package_file("lia/_default.md")
+        .and_then(|p| fs::read_to_string(p).ok())
+        .or_else(|| first(vec![format!("{dir}/agents/lia/_default.md"), format!("{dir}/agents/rob/_default.md")]));
+    let personal = first(vec![format!("{cfg}/filigrane/lia/{app}.md"), format!("{cfg}/filigrane/rob/{app}.md")]);
+    let text: Vec<String> = [default, own, personal]
         .into_iter()
         .flatten()
         .collect();

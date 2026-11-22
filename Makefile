@@ -30,16 +30,25 @@ test:
 	$(CARGO) test --release --locked
 
 check: build test
-	@if [ -d shell/ctl ]; then python3 -I scripts/fili-api-lint --app .; fi
+	python3 -I scripts/fili-api-lint --app crates/fili-ai-window
 
 install: build install-data
 	for b in $(BINS); do install -Dm755 $(TARGET_DIR)/release/$$b $(DESTDIR)$(BINDIR)/$$b; done
 
 install-data:
 	install -Dm755 bin/fili-ai $(DESTDIR)$(BINDIR)/fili-ai
+	install -Dm644 data/fili-ai.desktop $(DESTDIR)$(DATADIR)/applications/fili-ai.desktop
+	if [ -d data/icons ]; then cp -r data/icons $(DESTDIR)$(DATADIR)/; fi
+	install -Dm644 fili-ai.toml $(DESTDIR)$(DATADIR)/doc/fili-ai/fili-ai.toml
+	install -Dm644 data/prompts/chat-prompt.md $(DESTDIR)$(DATADIR)/fili-ai/chat-prompt.md
+	install -Dm644 data/prompts/lia/_default.md $(DESTDIR)$(DATADIR)/fili-ai/lia/_default.md
 	install -Dm644 LICENSE $(DESTDIR)$(DATADIR)/licenses/fili-ai/LICENSE
-	if [ -d shell ]; then mkdir -p $(DESTDIR)$(DATADIR)/filigrane/shell && cp -r shell/. $(DESTDIR)$(DATADIR)/filigrane/shell/; fi
+	for f in licenses/*; do install -Dm644 "$$f" $(DESTDIR)$(DATADIR)/licenses/fili-ai/$$(basename "$$f"); done
+	mkdir -p $(DESTDIR)$(DATADIR)/filigrane/shell
+	cp -r crates/fili-ai-window/shell/. $(DESTDIR)$(DATADIR)/filigrane/shell/
 
 uninstall:
 	for b in $(BINS) fili-ai; do rm -f $(DESTDIR)$(BINDIR)/$$b; done
-	rm -rf $(DESTDIR)$(DATADIR)/licenses/fili-ai
+	rm -rf $(DESTDIR)$(DATADIR)/licenses/fili-ai $(DESTDIR)$(DATADIR)/fili-ai $(DESTDIR)$(DATADIR)/doc/fili-ai
+	rm -f $(DESTDIR)$(DATADIR)/applications/fili-ai.desktop
+	rm -f $(DESTDIR)$(DATADIR)/filigrane/shell/ctl/fili-ai.json $(DESTDIR)$(DATADIR)/filigrane/shell/appmenu/fili-ai.json $(DESTDIR)$(DATADIR)/filigrane/shell/lia/fili-ai.md $(DESTDIR)$(DATADIR)/filigrane/shell/incident/lia.toml

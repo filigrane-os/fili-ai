@@ -307,6 +307,9 @@ QtObject {
         return Math.max(300, Math.min(900, w));
     }
     function saveView() {
+        // Tests never touch the files of the user
+        if (testing)
+            return;
         Link.writeText(viewFile, mode + " " + viewWidth + "\n");
     }
     property var queued: ({})

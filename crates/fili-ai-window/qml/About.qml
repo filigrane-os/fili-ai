@@ -67,7 +67,17 @@ Window {
                 id: content
                 anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.space4 + Theme.space2 }
                 spacing: Theme.space3
-                Text { Layout.alignment: Qt.AlignHCenter; text: String.fromCodePoint(0xf06a9); color: Theme.working; font { family: Theme.icons; pixelSize: 64 } }
+                // The icon of the application (icon theme), else the glyph of the assistant
+                readonly property string iconFile: Link.iconPath("fili-ai")
+                Image {
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: content.iconFile !== ""
+                    source: content.iconFile !== "" ? "file://" + content.iconFile : ""
+                    sourceSize: Qt.size(192, 192)
+                    Layout.preferredWidth: 96
+                    Layout.preferredHeight: 96
+                }
+                Text { Layout.alignment: Qt.AlignHCenter; visible: content.iconFile === ""; text: String.fromCodePoint(0xf06a9); color: Theme.working; font { family: Theme.icons; pixelSize: 64 } }
                 Text { Layout.alignment: Qt.AlignHCenter; text: "Lia"; color: Theme.text; font { family: Theme.font; pixelSize: 28; weight: Theme.weightAccent } }
                 Text { Layout.alignment: Qt.AlignHCenter; text: Link.tr("The assistant of Filigrane"); color: Theme.textSecondary; font { family: Theme.font; pixelSize: Theme.size; weight: Font.Light } }
                 Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space2; implicitHeight: 1; color: Theme.border }

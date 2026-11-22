@@ -19,7 +19,11 @@ Window {
     LayerShell.Window.scope: "fili-ai"
     LayerShell.Window.layer: LayerShell.Window.LayerTop
     LayerShell.Window.anchors: LayerShell.Window.AnchorTop | LayerShell.Window.AnchorBottom | LayerShell.Window.AnchorRight
-    LayerShell.Window.exclusionZone: viewWidth
+    // The same gap as between two niri windows (`gaps` of the niri config): margins on the three anchored edges, and the
+    // exclusive zone counts the right one so that the windows keep that gap beside the drawer
+    readonly property int gap: 16
+    LayerShell.Window.margins: ({ left: 0, top: gap, right: gap, bottom: gap })
+    LayerShell.Window.exclusionZone: viewWidth + gap
     LayerShell.Window.keyboardInteractivity: LayerShell.Window.KeyboardInteractivityOnDemand
 
     Component.onCompleted: Chat.connectNow()
@@ -43,9 +47,9 @@ Window {
         }
 
         Rectangle {
-            anchors { fill: parent; margins: Theme.space1 }
+            anchors.fill: parent
             color: Theme.background
-            radius: Theme.radiusWindow
+            radius: 8
             border { width: Theme.borderWidth; color: Theme.border }
             clip: true
 

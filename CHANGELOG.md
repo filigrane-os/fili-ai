@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.1
+
+- The icon: a line portrait of a girl with long wavy hair, on the nuit tile of the brand.
+- Fix: the `agent` bar module did not load from the package (`AgentState is not a type`): its state is now loaded by URL.
+- The permission notification closes once the request is settled, wherever it was answered.
+- Generic names, without compatibility with the previous ones (beta): `FILI_AGENT_MODEL` (model of the requests scoped to an
+  application) and `FILI_AGENT_IA` (marker of the drawer sessions for the hooks of the agents).
+- Tests of the conversation logic (`fili-ai-window --test`, 58 checks, run by `make check` and the CI).
+- The About card shows the icon.
+
 ## 0.1.0
 
 First release of Lia (fili-ai) as an application of its own, out of the Filigrane distribution.

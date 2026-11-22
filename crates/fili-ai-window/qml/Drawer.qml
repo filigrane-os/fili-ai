@@ -147,6 +147,11 @@ Window {
                         Layout.fillHeight: true
                         Layout.preferredWidth: 52
                         color: Theme.backgroundDeep
+                        // The bottom left corner follows the rounded corner of the drawer (a Rectangle does not clip to a rounded
+                        // parent): the rail is rounded, and two plain strips give back the square top and right edges
+                        radius: 8
+                        Rectangle { anchors { left: parent.left; right: parent.right; top: parent.top } height: 20; color: parent.color }
+                        Rectangle { anchors { right: parent.right; top: parent.top; bottom: parent.bottom } width: 12; color: parent.color }
                         HoverHandler { id: railHover }
                         property string tipText: ""
                         property real tipY: 0

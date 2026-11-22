@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- The bottom left corner of the session rail follows the rounded corner of the drawer.
+
 ## 0.1.3
 
 - The drawer is stuck to the right edge of the screen, and the gap between it and the windows is the one between two windows

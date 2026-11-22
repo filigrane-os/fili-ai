@@ -1,21 +1,53 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96"><title>Lia</title>
-<!-- Lia, the assistant of Filigrane: a woman with shoulder-length hair, in thin lines like the other icons of the family (brand
-     colours: nuit tile, voile line, a translucent veil for the hair) -->
-<rect x="4" y="4" width="88" height="88" rx="20" fill="#1c222b"/>
-<g fill="none" stroke="#9dbbd6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-  <!-- hair: a translucent veil from the crown down to the shoulders, with a side parting -->
-  <path d="M48 20 C31 20 23 33 24 49 C25 59 21 65 23 73 C28 71 33 70 37 68 L59 68 C63 70 68 71 73 73 C75 65 71 59 72 49 C73 33 65 20 48 20 Z" fill="#9dbbd6" fill-opacity="0.16"/>
-  <path d="M43 20.5 C41 29 36.5 33 35 41"/>
-  <path d="M43 20.5 C52 22 59.5 28 61 38"/>
-  <!-- face and neck -->
-  <path d="M35 41 C34 52 40 61 48 61 C56 61 62 52 61 38"/>
-  <path d="M43 60 L43 67 M53 60 L53 67"/>
-  <!-- shoulders -->
-  <path d="M20 84 C21 73 31 69 43 67 M76 84 C75 73 65 69 53 67"/>
-</g>
-<!-- eyes and smile, minimal -->
-<g fill="none" stroke="#dbe7f4" stroke-width="2" stroke-linecap="round">
-  <path d="M42 47 L42.01 47 M54 47 L54.01 47"/>
-  <path d="M44.5 54 C47 56 49 56 51.5 54"/>
+<!-- Lia, the assistant of Filigrane: a portrait of a woman with shoulder-length hair. Fine lines in the brand colours (nuit tile,
+     voile and brume lines), the hair is a few translucent veils laid over each other, and the background is a watermark
+     (filigrane) of thin circles. -->
+<defs>
+  <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#27313d"/><stop offset="1" stop-color="#181d25"/></linearGradient>
+  <linearGradient id="veil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9dbbd6" stop-opacity="0.34"/><stop offset="1" stop-color="#5f7894" stop-opacity="0.16"/></linearGradient>
+  <clipPath id="clip"><rect x="4" y="4" width="88" height="88" rx="20"/></clipPath>
+</defs>
+<rect x="4" y="4" width="88" height="88" rx="20" fill="url(#tile)"/>
+<g clip-path="url(#clip)">
+  <!-- watermark -->
+  <g fill="none" stroke="#9dbbd6" stroke-width="0.7" stroke-opacity="0.16">
+    <circle cx="48" cy="46" r="30"/><circle cx="48" cy="46" r="38"/><circle cx="48" cy="46" r="46" stroke-dasharray="1.5 2.5"/>
+    <path d="M2 46 H94 M48 0 V96" stroke-opacity="0.07"/>
+  </g>
+  <!-- hair, back veil then front veil -->
+  <path d="M48 15.5 C29 15.5 19.5 30 20.5 48 C21.5 60 17.5 69 19.5 80 C26 78 32 76 36 72 L60 72 C64 76 70 78 76.5 80 C78.5 69 74.5 60 75.5 48 C76.5 30 67 15.5 48 15.5 Z" fill="url(#veil)" stroke="#9dbbd6" stroke-width="1.1" stroke-opacity="0.75" stroke-linejoin="round"/>
+  <path d="M48 19 C32 19 24.5 32 25.5 48 C26.3 58 24 66 25 76 C29 74.5 33 72.5 36 70 L60 70 C63 72.5 67 74.5 71 76 C72 66 69.7 58 70.5 48 C71.5 32 64 19 48 19 Z" fill="#9dbbd6" fill-opacity="0.10"/>
+  <path d="M19.5 80 C22 82.5 27 82 29 78.5 M76.5 80 C74 82.5 69 82 67 78.5" fill="none" stroke="#9dbbd6" stroke-width="1" stroke-opacity="0.7" stroke-linecap="round"/>
+  <!-- neck, shoulders and garment -->
+  <path d="M42.5 62 L43 71 C45 73 51 73 53 71 L53.5 62 Z" fill="#2a3542" stroke="#dbe7f4" stroke-width="1.1" stroke-linejoin="round" stroke-opacity="0.85"/>
+  <path d="M10 96 C11 82 23 75 41 72 L48 80 L55 72 C73 75 85 82 86 96 Z" fill="#20293a" stroke="#9dbbd6" stroke-width="1.2" stroke-linejoin="round" stroke-opacity="0.9"/>
+  <path d="M41 72 L48 80 L55 72" fill="none" stroke="#dbe7f4" stroke-width="1" stroke-opacity="0.6" stroke-linejoin="round"/>
+  <path d="M26 90 C30 84 36 80 42 78 M70 90 C66 84 60 80 54 78" fill="none" stroke="#9dbbd6" stroke-width="0.8" stroke-opacity="0.4"/>
+  <!-- face -->
+  <path d="M36 41 C35.5 54 41 64 48 64.5 C55 64 60.5 54 60 41 C60 31 55 25 48 25 C41 25 36 31 36 41 Z" fill="#2a3542" stroke="#dbe7f4" stroke-width="1.2" stroke-linejoin="round" stroke-opacity="0.9"/>
+  <!-- fringe, swept to the left -->
+  <path d="M48 16.5 C46.5 26 40.5 33 35.5 42 C35 34 38 28 42 25 C44.5 23 46.5 20 48 16.5 Z" fill="#9dbbd6" fill-opacity="0.28" stroke="#9dbbd6" stroke-width="1.1" stroke-opacity="0.85" stroke-linejoin="round"/>
+  <path d="M48 16.5 C55.5 20.5 61 28 60.5 41 C59 35 56 31 52 29.5 C49.5 28.5 48 23 48 16.5 Z" fill="#9dbbd6" fill-opacity="0.2" stroke="#9dbbd6" stroke-width="1.1" stroke-opacity="0.85" stroke-linejoin="round"/>
+  <!-- strands, falling in soft waves and turning outwards at the shoulders -->
+  <g fill="none" stroke="#9dbbd6" stroke-width="0.9" stroke-opacity="0.6" stroke-linecap="round">
+    <path d="M31 28 C25 38 28.5 47 25.5 57 C23.5 64 25.5 70 21.5 77"/>
+    <path d="M35.5 23 C30 34 33 43 30 53 C28.3 60 30.5 66 27.5 73"/>
+    <path d="M65 28 C71 38 67.5 47 70.5 57 C72.5 64 70.5 70 74.5 77"/>
+    <path d="M60.5 23 C66 34 63 43 66 53 C67.7 60 65.5 66 68.5 73"/>
+    <path d="M44 20 C41 27 38.5 31 36.5 36"/><path d="M52 22 C56 26 58.5 31 59.5 36"/>
+  </g>
+  <!-- eyes, brows, nose, lips -->
+  <g fill="none" stroke="#dbe7f4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M39.3 47.2 C41 45.2 43.7 45.2 45.3 47.2 C43.7 48.6 41 48.6 39.3 47.2 Z" stroke-width="1"/>
+    <path d="M56.7 47.2 C55 45.2 52.3 45.2 50.7 47.2 C52.3 48.6 55 48.6 56.7 47.2 Z" stroke-width="1"/>
+    <path d="M39 46.8 C38.5 46.4 38.3 46 38.1 45.5 M57 46.8 C57.5 46.4 57.7 46 57.9 45.5" stroke-width="0.9"/>
+    <path d="M38.3 43 C40.5 41.4 43.7 41.5 45.7 42.6 M57.7 43 C55.5 41.4 52.3 41.5 50.3 42.6" stroke-width="1.1" stroke-opacity="0.8"/>
+    <path d="M48 48.5 C47.6 51 47 52.3 46.3 53.1 C47.5 53.9 48.9 53.9 50 53" stroke-width="0.9" stroke-opacity="0.7"/>
+    <path d="M43.8 57.7 C45.6 56.6 47 56.8 48 57.3 C49 56.8 50.4 56.6 52.2 57.7" stroke-width="0.9"/>
+  </g>
+  <circle cx="42.3" cy="47" r="1.05" fill="#dbe7f4"/><circle cx="53.7" cy="47" r="1.05" fill="#dbe7f4"/>
+  <path d="M43.8 57.7 C45.6 60.2 50.4 60.2 52.2 57.7 C50.4 58.3 45.6 58.3 43.8 57.7 Z" fill="#9dbbd6" fill-opacity="0.38" stroke="#dbe7f4" stroke-width="0.8" stroke-linejoin="round" stroke-opacity="0.8"/>
+  <!-- a light on the cheek and the shoulder -->
+  <path d="M38.5 52 C39.5 55.5 41.5 58.5 44 60.5" fill="none" stroke="#dbe7f4" stroke-width="0.7" stroke-opacity="0.35" stroke-linecap="round"/>
 </g>
 </svg>

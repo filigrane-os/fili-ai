@@ -14,7 +14,10 @@ BINDIR ?= $(PREFIX)/bin
 DATADIR ?= $(PREFIX)/share
 CARGO ?= cargo
 TARGET_DIR ?= $(if $(CARGO_TARGET_DIR),$(CARGO_TARGET_DIR),target)
-BINS = fili-ai-daemon fili-ai-session
+BINS = fili-ai-daemon fili-ai-session fili-ai-window
+# cxx-qt finds Qt through qmake. QMAKE overrides the search below (Qt 6 only)
+QMAKE ?= $(firstword $(wildcard /usr/lib/qt6/bin/qmake6 /usr/lib64/qt6/bin/qmake6 /usr/lib/qt6/bin/qmake /usr/lib64/qt6/bin/qmake) $(shell command -v qmake6 qmake-qt6 2>/dev/null))
+export QMAKE
 
 .PHONY: all build test check install install-data uninstall
 

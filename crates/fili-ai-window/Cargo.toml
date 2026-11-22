@@ -1,0 +1,15 @@
+[package]
+name = "fili-ai-window"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Lia, the window of the assistant of Filigrane: a drawer in Qt Quick on the layer-shell"
+
+[dependencies]
+cxx = "1.0.205"
+cxx-qt = "0.10.0"
+cxx-qt-lib = { version = "0.10.0", features = ["qt_gui", "qt_qml"] }
+
+[build-dependencies]
+cxx-qt-build = "0.10.0"

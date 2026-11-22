@@ -1,40 +1,48 @@
 pragma Singleton
-// Tokens of the fili-shell, dark defaults of theme.toml (names as in the shell). The merged theme (theme.toml and
-// fili-ai.toml layers, light mode) comes with the settings; until then the defaults are fixed.
+// Tokens of the fili-shell, same names. Merged theme (defaults of theme.toml, ~/.config/filigrane/theme.toml,
+// ~/.config/filigrane/fili-ai.toml) read from Rust, light mode and accent followed live (Link.light, Link.accent).
 import QtQuick
+import Fili.Ai
 
 QtObject {
-    readonly property color background: "#1c222b"
-    readonly property color backgroundDeep: "#181d25"
-    readonly property color surface: "#232b36"
-    readonly property color surfaceHover: "#2d3744"
-    readonly property color surfaceActive: "#3c4858"
-    readonly property color border: "#3c4858"
-    readonly property color muted: "#5f7894"
-    readonly property color textSecondary: "#a9b8c8"
-    readonly property color text: "#dbe7f4"
-    readonly property color warning: "#d2bf92"
-    readonly property color danger: "#c98f93"
-    readonly property color success: "#a3bfa8"
-    readonly property color accent: "#d2bf92"
-    readonly property color working: "#9dbbd6"
+    readonly property bool light: Link.light
+    // Re-read when a settings file changes (Link.settingsRev)
+    readonly property var theme: { const rev = Link.settingsRev; return JSON.parse(Link.themeJson()); }
+    readonly property var m: light ? theme.light : theme.dark
+    readonly property var tone: theme.accents[Link.accent] || theme.accents.default
 
-    readonly property string font: "Jost"
-    readonly property string mono: "JetBrains Mono"
-    readonly property string icons: "Fili Icons"
-    readonly property int size: 14
-    readonly property int sizeList: 13
-    readonly property int sizeSmall: 12
-    readonly property int sizeTitle: 18
-    readonly property int weightAccent: 600
-    readonly property int radiusControl: 6
-    readonly property int radiusWindow: 10
-    readonly property int borderWidth: 1
-    readonly property int space1: 4
-    readonly property int space2: 8
-    readonly property int space3: 12
-    readonly property int space4: 16
-    readonly property int headerHeight: 44
-    readonly property int footerHeight: 28
-    readonly property int sidebarWidth: 200
+    readonly property color background: m.background
+    readonly property color backgroundDeep: m.background_deep
+    readonly property color surface: m.surface
+    readonly property color surfaceHover: m.surface_hover
+    readonly property color surfaceActive: m.surface_active
+    readonly property color border: m.border
+    readonly property color muted: m.muted
+    readonly property color textSecondary: m.text_secondary
+    readonly property color text: m.text
+    readonly property color warning: m.warning
+    readonly property color danger: m.danger
+    readonly property color success: m.success
+    readonly property color accent: m.accent || (light ? tone[2] : tone[0])
+    // Working state: the blue of the "voile" accent
+    readonly property color working: light ? theme.accents.voile[2] : theme.accents.voile[0]
+
+    readonly property string font: m.font
+    readonly property string mono: m.mono
+    readonly property string icons: m.icons
+    readonly property int size: m.size
+    readonly property int sizeList: m.size_list
+    readonly property int sizeSmall: m.size_small
+    readonly property int sizeTitle: m.size_title
+    readonly property int weightAccent: m.weight_accent
+    readonly property int radiusControl: m.radius_control
+    readonly property int radiusWindow: m.radius_window
+    readonly property int borderWidth: m.border_width
+    readonly property int space1: m.space_1
+    readonly property int space2: m.space_2
+    readonly property int space3: m.space_3
+    readonly property int space4: m.space_4
+    readonly property int headerHeight: m.toolbar_height
+    readonly property int footerHeight: m.status_height
+    readonly property int sidebarWidth: m.sidebar_width
 }

@@ -20,7 +20,23 @@ pub mod qobject {
         #[qml_element]
         #[qml_singleton]
         #[qproperty(bool, connected, READ, WRITE, NOTIFY = connected_changed)]
+        // Look of the window: light mode and accent of `fili-theme`; settingsRev counts the changes of the settings files
+        #[qproperty(bool, light, READ, WRITE, NOTIFY = theme_changed)]
+        #[qproperty(QString, accent, READ, WRITE, NOTIFY = theme_changed)]
+        #[qproperty(i32, settings_rev, cxx_name = "settingsRev", READ, WRITE, NOTIFY = theme_changed)]
         type Link = super::LinkRust;
+
+        #[qsignal]
+        #[cxx_name = "themeChanged"]
+        fn theme_changed(self: Pin<&mut Link>);
+        // Merged theme as JSON (defaults, theme.toml, fili-ai.toml): see theme.rs
+        #[qinvokable]
+        #[cxx_name = "themeJson"]
+        fn theme_json(self: &Link) -> QString;
+        // Starts following the settings and `fili-theme` files (polled once a second)
+        #[qinvokable]
+        #[cxx_name = "watchTheme"]
+        fn watch_theme(self: Pin<&mut Link>);
 
         #[qsignal]
         #[cxx_name = "connectedChanged"]
@@ -58,6 +74,9 @@ use cxx_qt_lib::QString;
 #[derive(Default)]
 pub struct LinkRust {
     connected: bool,
+    light: bool,
+    accent: QString,
+    settings_rev: i32,
     writer: Option<UnixStream>,
 }
 
@@ -103,6 +122,40 @@ impl qobject::Link {
 
     fn socket_path(&self) -> QString {
         QString::from(&socket())
+    }
+
+    fn theme_json(&self) -> QString {
+        QString::from(&crate::theme::theme_json())
+    }
+
+    fn watch_theme(mut self: Pin<&mut Self>) {
+        let (light, accent) = (crate::theme::read_light(), crate::theme::read_accent());
+        self.as_mut().set_light(light);
+        self.as_mut().set_accent(QString::from(&accent));
+        let qt = self.qt_thread();
+        std::thread::spawn(move || {
+            let mut last = crate::theme::stamp();
+            loop {
+                std::thread::sleep(std::time::Duration::from_secs(1));
+                let now = crate::theme::stamp();
+                if now == last {
+                    continue;
+                }
+                last = now;
+                let (light, accent) = (crate::theme::read_light(), crate::theme::read_accent());
+                if qt
+                    .queue(move |mut l| {
+                        let rev = *l.settings_rev() + 1;
+                        l.as_mut().set_light(light);
+                        l.as_mut().set_accent(QString::from(&accent));
+                        l.as_mut().set_settings_rev(rev);
+                    })
+                    .is_err()
+                {
+                    return;
+                }
+            }
+        });
     }
 
     fn icon_path(&self, name: &QString) -> QString {

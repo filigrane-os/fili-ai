@@ -2,6 +2,7 @@
 // The daemon (fili-ai-daemon) keeps the sessions; this window shows them and sends the messages.
 mod icons;
 mod link;
+mod theme;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QString, QUrl};
 

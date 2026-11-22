@@ -29,7 +29,10 @@ Window {
     FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/Jost-Variable.ttf" }
     FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/JetBrainsMono-Variable.ttf" }
     FontLoader { source: "qrc:/qt/qml/Fili/Ai/fonts/FiliIcons.ttf" }
-    Component.onCompleted: Chat.connectNow()
+    Component.onCompleted: {
+        Link.watchTheme();
+        Chat.connectNow();
+    }
 
     FocusScope {
         anchors.fill: parent

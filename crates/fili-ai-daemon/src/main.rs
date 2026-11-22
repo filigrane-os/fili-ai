@@ -767,9 +767,9 @@ fn scope_brief_in(link: &str, dir: &str, shipped: &[String]) -> String {
     let own = first(vec![format!("{dir}/agents/lia/{app}.md"), format!("{dir}/agents/rob/{app}.md")]).or_else(|| {
         shipped.iter().rev().find_map(|d| first(vec![format!("{d}/lia/{app}.md"), format!("{d}/rob/{app}.md")]))
     });
-    let default = package_file("lia/_default.md")
-        .and_then(|p| fs::read_to_string(p).ok())
-        .or_else(|| first(vec![format!("{dir}/agents/lia/_default.md"), format!("{dir}/agents/rob/_default.md")]));
+    // The generic brief: the repository's own (agents/lia/_default.md, the older agents/rob/), else the one of the package
+    let default = first(vec![format!("{dir}/agents/lia/_default.md"), format!("{dir}/agents/rob/_default.md")])
+        .or_else(|| package_file("lia/_default.md").and_then(|p| fs::read_to_string(p).ok()));
     let personal = first(vec![format!("{cfg}/filigrane/lia/{app}.md"), format!("{cfg}/filigrane/rob/{app}.md")]);
     let text: Vec<String> = [default, own, personal]
         .into_iter()

@@ -2,6 +2,7 @@
 // The daemon (fili-ai-daemon) keeps the sessions; this window shows them and sends the messages.
 mod ctl;
 mod icons;
+mod logs;
 mod link;
 mod theme;
 
@@ -41,6 +42,10 @@ fn main() {
         // SAFETY: single-threaded at this point, before Qt creates any thread
         unsafe { std::env::set_var("QT_WAYLAND_SHELL_INTEGRATION", "layer-shell") };
     }
+    // The log of the window (Debug panel): ~/.local/state/filigrane/logs/fili-ai.log; panics and QML errors become incidents
+    let incidents = !std::fs::read_to_string(theme::path()).unwrap_or_default().lines().any(|l| l.replace(' ', "") == "incidents=\"off\"");
+    logs::init("fili-ai", "filigrane-os/fili-ai", option_env!("FILI_AI_GIT").unwrap_or(env!("CARGO_PKG_VERSION")), incidents);
+    logs::capture_qt();
     let mut app = QGuiApplication::new();
     QGuiApplication::set_desktop_file_name(&QString::from("fili-ai"));
     let mut engine = QQmlApplicationEngine::new();

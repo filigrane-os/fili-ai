@@ -51,6 +51,8 @@ Window {
                 Chat.act("new-here");
             else if (e.key === Qt.Key_N)
                 Chat.newSession();
+            else if (e.key === Qt.Key_L && (e.modifiers & Qt.ShiftModifier))
+                Chat.debugOpen = !Chat.debugOpen;
             else if (e.key === Qt.Key_L)
                 Chat.tabsOpen = !Chat.tabsOpen;
             else if (e.key === Qt.Key_V && Chat.paste())
@@ -81,7 +83,7 @@ Window {
             }
 
             ColumnLayout {
-                anchors.fill: parent
+                anchors { left: parent.left; right: parent.right; top: parent.top; bottom: parent.bottom; bottomMargin: debug.height }
                 spacing: 0
 
                 // Header 44: title of the session, state, new session
@@ -256,6 +258,7 @@ Window {
                         spacing: 0
                         boundsBehavior: Flickable.StopAtBounds
                         delegate: Bubble {}
+                        KineticScroll {}
                         footer: Item {
                             width: list.width
                             height: live.visible ? live.height + Theme.space3 : 0
@@ -269,6 +272,7 @@ Window {
                                 font { family: Theme.font; pixelSize: Theme.size }
                             }
                         }
+                        FiliScrollBar { flick: list; anchors { top: parent.top; bottom: parent.bottom; right: parent.right } }
                         onCountChanged: Qt.callLater(() => positionViewAtEnd())
                         // All the sessions (a click restores an archived one)
                         Rectangle {
@@ -404,6 +408,13 @@ Window {
                     }
                     }
                 }
+            }
+
+            // Debug panel (View > Debug Logs, Ctrl+Shift+L): the log of the window, above the bottom edge
+            DebugPanel {
+                id: debug
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+                open: Chat.debugOpen
             }
 
             // Tooltip of a session of the rail (title and linked application), beside the rail

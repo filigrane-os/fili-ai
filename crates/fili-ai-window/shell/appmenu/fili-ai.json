@@ -105,6 +105,14 @@
         {
           "label": "Wide",
           "exec": "fili-ai ctl --pid %pid action width-wide"
+        },
+        {
+          "sep": true
+        },
+        {
+          "label": "Debug Logs",
+          "keys": "Ctrl+Shift+L",
+          "exec": "fili-ai ctl --pid %pid action debug"
         }
       ]
     }

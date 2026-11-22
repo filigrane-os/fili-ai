@@ -76,6 +76,32 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "writeText"]
         fn write_text(self: &Link, path: &QString, text: &QString);
+        // Debug panel: the entries of the log after `since` as JSON {seq, entries}, the log file, clearing, the clipboard
+        #[qinvokable]
+        fn logs(self: &Link, since: i32) -> QString;
+        #[qinvokable]
+        #[cxx_name = "logFile"]
+        fn log_file(self: &Link) -> QString;
+        #[qinvokable]
+        #[cxx_name = "clearLogs"]
+        fn clear_logs(self: &Link);
+        #[qinvokable]
+        #[cxx_name = "copyText"]
+        fn copy_text(self: &Link, text: &QString);
+        #[qinvokable]
+        #[cxx_name = "openPath"]
+        fn open_path(self: &Link, path: &QString);
+        // Writes an incident for a problem reported from the panel; its id ("" when it could not be written)
+        #[qinvokable]
+        #[cxx_name = "reportProblem"]
+        fn report_problem(self: &Link, text: &QString) -> QString;
+        // Small interface state kept between two launches (height of the panel)
+        #[qinvokable]
+        #[cxx_name = "uiState"]
+        fn ui_state(self: &Link, key: &QString) -> QString;
+        #[qinvokable]
+        #[cxx_name = "setUiState"]
+        fn set_ui_state(self: &Link, key: &QString, value: &QString);
         #[qinvokable]
         fn version(self: &Link) -> QString;
         #[qinvokable]
@@ -222,6 +248,61 @@ impl qobject::Link {
         if std::fs::write(&tmp, text.to_string()).is_ok() {
             let _ = std::fs::rename(&tmp, &path);
         }
+    }
+
+    fn logs(&self, since: i32) -> QString {
+        let (seq, entries) = crate::logs::since(since.max(0) as u64);
+        QString::from(&serde_json::json!({ "seq": seq, "entries": entries }).to_string())
+    }
+
+    fn log_file(&self) -> QString {
+        QString::from(&crate::logs::path().display().to_string())
+    }
+
+    fn clear_logs(&self) {
+        crate::logs::clear();
+    }
+
+    fn copy_text(&self, text: &QString) {
+        let child = std::process::Command::new("wl-copy")
+            .arg("--")
+            .arg(text.to_string())
+            .stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn();
+        if let Ok(mut child) = child {
+            std::thread::spawn(move || child.wait());
+        }
+    }
+
+    fn open_path(&self, path: &QString) {
+        let child = std::process::Command::new("xdg-open")
+            .arg(path.to_string())
+            .stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn();
+        if let Ok(mut child) = child {
+            std::thread::spawn(move || child.wait());
+        }
+    }
+
+    fn report_problem(&self, text: &QString) -> QString {
+        let said = text.to_string();
+        let message = if said.trim().is_empty() { "Problem reported from the Debug panel".to_string() } else { said };
+        QString::from(&crate::logs::incident("manual", &message, true).unwrap_or_default())
+    }
+
+    fn ui_state(&self, key: &QString) -> QString {
+        let dir = std::env::var("XDG_STATE_HOME").unwrap_or_else(|_| format!("{}/.local/state", std::env::var("HOME").unwrap_or_default()));
+        QString::from(&std::fs::read_to_string(format!("{dir}/filigrane/fili-ai/ui/{}", key.to_string().replace('/', "_"))).unwrap_or_default().trim().to_string())
+    }
+
+    fn set_ui_state(&self, key: &QString, value: &QString) {
+        let dir = std::env::var("XDG_STATE_HOME").unwrap_or_else(|_| format!("{}/.local/state", std::env::var("HOME").unwrap_or_default()));
+        let _ = std::fs::create_dir_all(format!("{dir}/filigrane/fili-ai/ui"));
+        let _ = std::fs::write(format!("{dir}/filigrane/fili-ai/ui/{}", key.to_string().replace('/', "_")), value.to_string());
     }
 
     fn version(&self) -> QString {

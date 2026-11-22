@@ -27,6 +27,10 @@ QtObject {
     // Working state: the blue of the "voile" accent
     readonly property color working: light ? theme.accents.voile[2] : theme.accents.voile[0]
 
+    function alpha(c, a) {
+        return Qt.rgba(c.r, c.g, c.b, a);
+    }
+
     readonly property string font: m.font
     readonly property string mono: m.mono
     readonly property string icons: m.icons

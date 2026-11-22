@@ -5,7 +5,7 @@ use std::io::Write;
 // The names `action NAME` accepts; shell/ctl/fili-ai.json lists them with their labels (fili-api-lint --write)
 pub const ACTIONS: &[&str] = &[
     "about", "toggle", "show", "close", "new", "new-here", "sessions", "rename", "unlink", "archive", "stop", "allow", "deny",
-    "drop-context", "float", "dock", "width-narrow", "width-medium", "width-wide", "settings",
+    "drop-context", "float", "dock", "width-narrow", "width-medium", "width-wide", "settings", "debug",
 ];
 
 const USAGE: &str = "usage: fili-ai ctl [--pid PID] action NAME [ARG...] | state | actions";

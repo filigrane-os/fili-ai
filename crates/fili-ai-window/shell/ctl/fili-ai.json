@@ -108,6 +108,11 @@
     {
       "name": "settings",
       "label": "Settings…"
+    },
+    {
+      "name": "debug",
+      "label": "Debug Logs",
+      "keys": "Ctrl+Shift+L"
     }
   ]
 }

@@ -21,6 +21,7 @@ QtObject {
     // Sessions whose turn finished while another one was shown
     property var unread: ({})
     property bool tabsOpen: true
+    property bool debugOpen: false
     // Archive being confirmed (session id), "" = none
     property string confirmId: ""
     // View: "dock" (windows shrink beside the drawer) or "float" (above them), and the width. Kept in the state file
@@ -215,6 +216,7 @@ QtObject {
         case "sessions": show(); tabsOpen = !tabsOpen; break;
         case "rename": show(); startRename(); break;
         case "about": aboutRequested(); break;
+        case "debug": show(); debugOpen = !debugOpen; break;
         case "settings": openSettings(); break;
         case "stop": stop(); break;
         case "archive": show(); askArchive(current); break;

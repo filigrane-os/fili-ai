@@ -14,6 +14,9 @@ QtObject {
     property string live: ""
     property string pending: ""
     property bool agentOk: true
+    // Sessions whose turn finished while another one was shown
+    property var unread: ({})
+    property bool tabsOpen: true
     property var queued: ({})
     readonly property var log: items[current] ?? []
     readonly property bool working: (states[current] ?? "idle") !== "idle"
@@ -67,7 +70,13 @@ QtObject {
         if (current)
             send_({ op: "stop", id: current });
     }
+    function archive(id) {
+        send_({ op: "archive", id });
+    }
     function openSession(id) {
+        const u = Object.assign({}, unread);
+        delete u[id];
+        unread = u;
         current = id;
         live = "";
         if (items[id] === undefined)
@@ -140,11 +149,17 @@ QtObject {
             if (ev.id === current)
                 live += ev.text;
         } else if (ev.ev === "state") {
+            const was = states[ev.id] ?? "idle";
             const m = Object.assign({}, states);
             m[ev.id] = ev.state;
             states = m;
             if (ev.state === "idle" && ev.id === current)
                 live = "";
+            if (ev.state === "idle" && was !== "idle" && ev.id !== current) {
+                const u = Object.assign({}, unread);
+                u[ev.id] = true;
+                unread = u;
+            }
         } else if (ev.ev === "note") {
             append(ev.id, { kind: "note", text: ev.code === "interrupted" ? qsTr("Interrupted") : ev.code, name: "" });
         }

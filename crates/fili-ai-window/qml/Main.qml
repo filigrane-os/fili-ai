@@ -78,71 +78,126 @@ Window {
                             color: Chat.waiting ? Theme.warning : Theme.textSecondary
                             font { family: Theme.font; pixelSize: Theme.sizeSmall }
                         }
-                        Text {
-                            text: "+"
-                            color: Theme.textSecondary
-                            font { family: Theme.font; pixelSize: Theme.sizeTitle }
-                            MouseArea { anchors { fill: parent; margins: -Theme.space1 } onClicked: Chat.newSession() }
-                        }
+                        IconButton { glyph: "≡"; tip: qsTr("Sessions"); on: Chat.tabsOpen; onClicked: Chat.tabsOpen = !Chat.tabsOpen }
+                        IconButton { glyph: "+"; tip: qsTr("New session"); onClicked: Chat.newSession() }
+                        IconButton { glyph: "×"; tip: qsTr("Close"); onClicked: Qt.quit() }
                     }
                     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.borderWidth; color: Theme.border }
                 }
 
-                ListView {
-                    id: list
+                RowLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    clip: true
-                    model: Chat.log
                     spacing: 0
-                    boundsBehavior: Flickable.StopAtBounds
-                    delegate: Bubble {}
-                    footer: Item {
-                        width: list.width
-                        height: live.visible ? live.height + Theme.space3 : 0
+
+                    // Sessions: the 20 most recent; dot = waiting (sand) or finished and unread (green)
+                    Rectangle {
+                        visible: Chat.tabsOpen
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 140
+                        color: Theme.backgroundDeep
+                        ListView {
+                            anchors.fill: parent
+                            clip: true
+                            model: Chat.sessions.slice(0, 20)
+                            delegate: Rectangle {
+                                id: row
+                                required property var modelData
+                                readonly property bool sel: modelData.id === Chat.current
+                                readonly property string st: Chat.states[modelData.id] ?? "idle"
+                                width: ListView.view.width
+                                height: 32
+                                color: sel ? Theme.surfaceHover : rowHover.hovered ? Theme.surface : "transparent"
+                                HoverHandler { id: rowHover }
+                                Rectangle {
+                                    id: dot
+                                    x: Theme.space2; anchors.verticalCenter: parent.verticalCenter
+                                    width: 8; height: 8; radius: 4
+                                    visible: row.st === "waiting" || Chat.unread[row.modelData.id] === true || row.st !== "idle"
+                                    color: row.st === "waiting" ? Theme.warning : Chat.unread[row.modelData.id] ? Theme.success : Theme.muted
+                                }
+                                Text {
+                                    anchors { left: parent.left; leftMargin: Theme.space2 + 14; right: parent.right; rightMargin: archive.visible ? 26 : Theme.space2; verticalCenter: parent.verticalCenter }
+                                    text: row.modelData.title || qsTr("New session")
+                                    elide: Text.ElideRight
+                                    color: row.sel ? Theme.text : Theme.textSecondary
+                                    font { family: Theme.font; pixelSize: Theme.sizeList }
+                                }
+                                MouseArea { anchors.fill: parent; onClicked: Chat.openSession(row.modelData.id) }
+                                IconButton {
+                                    id: archive
+                                    visible: rowHover.hovered
+                                    anchors { right: parent.right; rightMargin: 2; verticalCenter: parent.verticalCenter }
+                                    implicitWidth: 22; implicitHeight: 22
+                                    glyph: "×"; tip: qsTr("Archive")
+                                    onClicked: Chat.archive(row.modelData.id)
+                                }
+                            }
+                        }
+                        Rectangle { anchors.right: parent.right; width: Theme.borderWidth; height: parent.height; color: Theme.border }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        spacing: 0
+                    ListView {
+                        id: list
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        model: Chat.log
+                        spacing: 0
+                        boundsBehavior: Flickable.StopAtBounds
+                        delegate: Bubble {}
+                        footer: Item {
+                            width: list.width
+                            height: live.visible ? live.height + Theme.space3 : 0
+                            Text {
+                                id: live
+                                visible: Chat.live !== ""
+                                x: Theme.space3; width: parent.width - Theme.space4
+                                text: Chat.live
+                                wrapMode: Text.Wrap
+                                color: Theme.text
+                                font { family: Theme.font; pixelSize: Theme.size }
+                            }
+                        }
+                        onCountChanged: Qt.callLater(() => positionViewAtEnd())
                         Text {
-                            id: live
-                            visible: Chat.live !== ""
-                            x: Theme.space3; width: parent.width - Theme.space4
-                            text: Chat.live
-                            wrapMode: Text.Wrap
-                            color: Theme.text
+                            anchors.centerIn: parent
+                            visible: !Chat.agentOk || (Chat.log.length === 0 && Chat.live === "")
+                            text: !Chat.linked ? qsTr("Connecting…") : !Chat.agentOk ? qsTr("No agent installed (fili-ai install)") : qsTr("Ask Lia")
+                            color: Theme.muted
                             font { family: Theme.font; pixelSize: Theme.size }
                         }
                     }
-                    onCountChanged: Qt.callLater(() => positionViewAtEnd())
-                    Text {
-                        anchors.centerIn: parent
-                        visible: !Chat.agentOk || (Chat.log.length === 0 && Chat.live === "")
-                        text: !Chat.linked ? qsTr("Connecting…") : !Chat.agentOk ? qsTr("No agent installed (fili-ai install)") : qsTr("Ask Lia")
-                        color: Theme.muted
-                        font { family: Theme.font; pixelSize: Theme.size }
-                    }
-                }
 
-                // Input: Enter sends, Shift+Enter new line
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.margins: Theme.space2
-                    Layout.preferredHeight: Math.min(160, Math.max(40, input.contentHeight + Theme.space3))
-                    radius: Theme.radiusControl
-                    color: Theme.surface
-                    border { width: Theme.borderWidth; color: input.activeFocus ? Theme.accent : Theme.border }
-                    TextEdit {
-                        id: input
-                        anchors { fill: parent; margins: Theme.space2 }
-                        wrapMode: TextEdit.Wrap
-                        color: Theme.text
-                        selectionColor: Theme.muted
-                        font { family: Theme.font; pixelSize: Theme.size }
-                        focus: true
-                        Keys.onPressed: e => {
-                            if ((e.key === Qt.Key_Return || e.key === Qt.Key_Enter) && !(e.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
-                                Chat.send(text);
-                                text = "";
-                                e.accepted = true;
+                    // Input: Enter sends, Shift+Enter new line
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.margins: Theme.space2
+                        Layout.preferredHeight: Math.min(160, Math.max(40, input.contentHeight + Theme.space3))
+                        radius: Theme.radiusControl
+                        color: Theme.surface
+                        border { width: Theme.borderWidth; color: input.activeFocus ? Theme.accent : Theme.border }
+                        TextEdit {
+                            id: input
+                            anchors { fill: parent; margins: Theme.space2 }
+                            wrapMode: TextEdit.Wrap
+                            color: Theme.text
+                            selectionColor: Theme.muted
+                            font { family: Theme.font; pixelSize: Theme.size }
+                            focus: true
+                            Keys.onPressed: e => {
+                                if ((e.key === Qt.Key_Return || e.key === Qt.Key_Enter) && !(e.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
+                                    Chat.send(text);
+                                    text = "";
+                                    e.accepted = true;
+                                }
                             }
                         }
+                    }
                     }
                 }
             }

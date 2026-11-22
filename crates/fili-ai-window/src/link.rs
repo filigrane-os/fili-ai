@@ -44,6 +44,17 @@ pub mod qobject {
         // One line received from the daemon (JSON text)
         #[qsignal]
         fn line(self: Pin<&mut Link>, text: &QString);
+        // A command of the command line or of the shell (`fili-ai toggle`, `here TEXT`, `answer RID:yes`...): one line
+        #[qsignal]
+        fn command(self: Pin<&mut Link>, text: &QString);
+        // Listens on $XDG_RUNTIME_DIR/fili-ai/ui.sock: the next `fili-ai-window VERB` reaches this window
+        #[qinvokable]
+        #[cxx_name = "serveCommands"]
+        fn serve_commands(self: Pin<&mut Link>);
+        // The command given on the command line of this process ("show" by default)
+        #[qinvokable]
+        #[cxx_name = "initialCommand"]
+        fn initial_command(self: &Link) -> QString;
 
         // Connects to the daemon socket (path given by `socketPath`); false when nobody listens
         #[qinvokable]
@@ -68,6 +79,9 @@ pub mod qobject {
         #[qinvokable]
         fn env(self: &Link, name: &QString) -> QString;
         // Starts a program without waiting for it (the daemon, `fili-ai-session`, notifications)
+        // Runs `sh -c SCRIPT` and gives its output (short commands only: it waits)
+        #[qinvokable]
+        fn capture(self: &Link, script: &QString) -> QString;
         #[qinvokable]
         fn spawn(self: &Link, program: &QString, args: &QString);
     }
@@ -165,6 +179,29 @@ impl qobject::Link {
         });
     }
 
+    fn initial_command(&self) -> QString {
+        QString::from(&crate::command_of(&std::env::args().skip(1).collect::<Vec<_>>()))
+    }
+
+    fn serve_commands(self: Pin<&mut Self>) {
+        let path = crate::ui_socket();
+        if let Some(dir) = std::path::Path::new(&path).parent() {
+            let _ = std::fs::create_dir_all(dir);
+        }
+        let _ = std::fs::remove_file(&path);
+        let Ok(listener) = std::os::unix::net::UnixListener::bind(&path) else { return };
+        let qt = self.qt_thread();
+        std::thread::spawn(move || {
+            for stream in listener.incoming().flatten() {
+                for line in BufReader::new(stream).lines().map_while(Result::ok) {
+                    if qt.queue(move |mut l| l.as_mut().command(&QString::from(&line))).is_err() {
+                        return;
+                    }
+                }
+            }
+        });
+    }
+
     fn icon_path(&self, name: &QString) -> QString {
         QString::from(&crate::icons::find(&name.to_string()).unwrap_or_default())
     }
@@ -178,11 +215,20 @@ impl qobject::Link {
         if let Some(dir) = path.parent() {
             let _ = std::fs::create_dir_all(dir);
         }
-        let _ = std::fs::write(path, text.to_string());
+        // Atomic: a reader (the shell, inotify) never sees half a file
+        let tmp = path.with_extension("tmp");
+        if std::fs::write(&tmp, text.to_string()).is_ok() {
+            let _ = std::fs::rename(&tmp, &path);
+        }
     }
 
     fn env(&self, name: &QString) -> QString {
         QString::from(&std::env::var(name.to_string()).unwrap_or_default())
+    }
+
+    fn capture(&self, script: &QString) -> QString {
+        let out = std::process::Command::new("sh").arg("-c").arg(script.to_string()).stdin(std::process::Stdio::null()).output();
+        QString::from(&out.map(|o| String::from_utf8_lossy(&o.stdout).into_owned()).unwrap_or_default())
     }
 
     fn spawn(&self, program: &QString, args: &QString) {

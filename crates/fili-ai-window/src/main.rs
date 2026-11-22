@@ -6,10 +6,29 @@ mod theme;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QString, QUrl};
 
+pub fn ui_socket() -> String {
+    format!("{}/fili-ai/ui.sock", std::env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| "/tmp".into()))
+}
+
+// The command of a command line: the arguments but the flags, on one line; "show" when there are none
+pub fn command_of(args: &[String]) -> String {
+    let words: Vec<&str> = args.iter().map(String::as_str).filter(|a| !a.starts_with("--")).collect();
+    if words.is_empty() { "show".into() } else { words.join(" ").split_whitespace().collect::<Vec<_>>().join(" ") }
+}
+
 fn main() {
     if std::env::args().nth(1).is_some_and(|a| a == "-V" || a == "--version") {
         println!("fili-ai-window {}", env!("CARGO_PKG_VERSION"));
         return;
+    }
+    // One window at a time: a running one takes the command (`toggle`, `here TEXT`...) and this process ends at once,
+    // before Qt is loaded (Mod+Y must be quick)
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if let Ok(mut s) = std::os::unix::net::UnixStream::connect(ui_socket()) {
+        use std::io::Write;
+        if writeln!(s, "{}", command_of(&args)).is_ok() {
+            return;
+        }
     }
     // The drawer is a layer-shell surface (package layer-shell-qt), chosen before Qt starts. `--window`: a normal window
     // (tests, compositors without layer-shell)
@@ -25,5 +44,18 @@ fn main() {
     }
     if let Some(app) = app.as_mut() {
         std::process::exit(app.exec());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::command_of;
+
+    #[test]
+    fn a_command_is_one_line_without_flags() {
+        let v = |a: &[&str]| command_of(&a.iter().map(|s| s.to_string()).collect::<Vec<_>>());
+        assert_eq!(v(&[]), "show");
+        assert_eq!(v(&["--window"]), "show");
+        assert_eq!(v(&["here", "two  words\nand more"]), "here two words and more");
     }
 }

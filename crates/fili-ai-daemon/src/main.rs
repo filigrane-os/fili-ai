@@ -1135,13 +1135,20 @@ fn note_context() -> Result<(), String> {
     fs::write(ctx, out.map(|o| o.stdout).unwrap_or_default()).map_err(|e| e.to_string())
 }
 
+// The window of the assistant (fili-ai-window): a running one takes the command, else this starts it with the command.
+// Detached, since the window outlives this command.
 fn shell_chat(args: &[&str]) -> Result<(), String> {
-    Command::new(format!("{}/.local/bin/fili-shell", home()))
-        .arg("ai")
-        .args(args)
-        .status()
+    let line = args.join(" ");
+    let local = format!("{}/.local/bin/fili-ai-window", home());
+    let program = if std::path::Path::new(&local).exists() { local } else { "fili-ai-window".to_string() };
+    Command::new(program)
+        .args(line.split_whitespace())
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
         .map(|_| ())
-        .map_err(|e| e.to_string())
+        .map_err(|e| format!("fili-ai-window: {e}"))
 }
 
 fn connect() -> Result<UnixStream, String> {
@@ -1165,6 +1172,8 @@ fn main() {
         // Without noting the application: the bar's click, the notification (the shell channel `fili-shell ai show|hide`)
         Some("show") => shell_chat(&["show"]),
         Some("hide") => shell_chat(&["close"]),
+        // Any action of the window (the menu of the bar, the notifications): `fili-ai act open ID`, `act answer RID:yes`...
+        Some("act") if a.len() >= 2 => shell_chat(&a[1..].iter().map(String::as_str).collect::<Vec<_>>()),
         Some("mcp") if a.len() >= 2 => mcp(&a[1]),
         Some("sessions") => connect().and_then(|s| {
             let mut l = String::new();

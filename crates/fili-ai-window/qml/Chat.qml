@@ -8,6 +8,10 @@ import Fili.Ai
 QtObject {
     id: chat
     property var sessions: []
+    // All the sessions, archived ones included (the list of the rail footer)
+    property var allSessions: []
+    property bool allOpen: false
+    property bool renaming: false
     property string current: ""
     property var items: ({})
     property var states: ({})
@@ -37,9 +41,241 @@ QtObject {
         const st = Link.readText(viewFile).trim().split(/\s+/);
         const mode = st[0] || cfg.mode;
         const width = parseInt(st[1]) || parseInt(cfg.width);
+        chat.follow = cfg.follow === "window" || cfg.follow === "off" ? cfg.follow : "app";
         chat.mode = mode === "float" ? "float" : "dock";
         chat.viewWidth = clampWidth(width || 440);
     }
+    // ───── window state ─────
+    property bool open: false
+    property bool focused: false
+    // Sessions whose answer is unread / permission asked: attention for the bar ("waiting", "done", "")
+    readonly property bool busy: Object.keys(states).some(k => states[k] !== "idle")
+    readonly property string attention: Object.keys(states).some(k => states[k] === "waiting") ? "waiting" : Object.keys(unread).length ? "done" : ""
+    // The application noted by `fili-ai toggle|here|ask` (fili-context): chip above the input, attached to the next message
+    property var ctx: null
+    property bool ctxOn: false
+    readonly property string ctxLabel: ctx ? [ctx.window?.app_id, ctx.window?.title].filter(x => x).join(" · ") : ""
+    readonly property string ctxFile: stateHome + "/filigrane/context.json"
+    property string follow: "app"
+    property bool followPending: false
+    property bool ctxReady: false
+    property bool sessionsFresh: false
+    property string pendingLink: ""
+    property string pendingAsk: ""
+    property bool hereWant: false
+    property string hereText: ""
+    property bool pendingScope: false
+    // A question sent from the floating field keeps the link until the agent starts working
+    property bool awaiting: false
+    signal focusInput
+    signal fieldRequested
+    signal fieldClosed
+
+    function readContext() {
+        let c = null;
+        try {
+            c = JSON.parse(Link.readText(ctxFile));
+        } catch (e) {}
+        ctx = c && c.window && c.window.app_id ? c : null;
+        ctxOn = ctx !== null;
+        ctxReady = true;
+    }
+    // Key of the session <-> application link; "" without an application. force: even with follow = "off"
+    function linkKey(c, force) {
+        const id = c?.window?.app_id;
+        if (!id || (follow === "off" && !force))
+            return "";
+        return follow === "window" ? id + "\n" + (c.window.title ?? "") : id;
+    }
+    function tryFollow() {
+        if (!followPending || !ctxReady || !sessionsFresh)
+            return;
+        followPending = false;
+        const key = linkKey(ctx);
+        if (!key || working)
+            return;
+        const s = sessions.find(x => x.link === key);
+        if (s && s.id !== current)
+            openSession(s.id);
+    }
+    function markRead() {
+        if (!unread[current])
+            return;
+        const u = Object.assign({}, unread);
+        delete u[current];
+        unread = u;
+    }
+    function show() {
+        if (!open) {
+            followPending = true;
+            ctxReady = false;
+            sessionsFresh = linked;
+        }
+        open = true;
+        markRead();
+        readContext();
+        connectNow();
+        tryFollow();
+        askNow();
+        hereNow();
+        focusInput();
+    }
+    function hide() {
+        open = false;
+    }
+    function toggle() {
+        open ? hide() : show();
+    }
+    function ask(text) {
+        if (!text)
+            return;
+        show();
+        followPending = false;
+        pendingAsk = text;
+        askNow();
+    }
+    function askNow() {
+        if (!pendingAsk || !ctxReady || !linked)
+            return;
+        pending = pendingAsk;
+        pendingAsk = "";
+        send_({ op: "new" });
+    }
+    // "Ask Lia" of an application: the session scoped to it is created and linked, TEXT is sent if given. Without a
+    // text, the small floating field asks it
+    function here(text) {
+        if (!text) {
+            fieldRequested();
+            return;
+        }
+        show();
+        followPending = false;
+        hereWant = true;
+        hereText = text;
+        hereNow();
+    }
+    // From the floating field: the drawer stays closed unless `drawer`
+    function askHere(text, drawer) {
+        if (drawer) {
+            here(text);
+            return;
+        }
+        followPending = false;
+        hereWant = true;
+        hereText = text;
+        awaiting = true;
+        awaitingTimer.restart();
+        ctxReady = false;
+        sessionsFresh = linked;
+        readContext();
+        connectNow();
+        hereNow();
+    }
+    function hereNow() {
+        if (!hereWant || !ctxReady || !sessionsFresh)
+            return;
+        hereWant = false;
+        const text = hereText;
+        hereText = "";
+        const key = linkKey(ctx, true);
+        if (!key) {
+            if (text)
+                ask(text);
+            return;
+        }
+        pendingLink = key;
+        pendingScope = true;
+        pending = text;
+        send_({ op: "new" });
+    }
+    property Timer awaitingTimer: Timer {
+        interval: 30000
+        onTriggered: chat.awaiting = false
+    }
+    // The window stays alive only while shown, or while an agent works for it
+    readonly property bool wantLink: open || busy || awaiting
+
+    // Commands (command line, bar menu, notifications): `act NAME ARGS`
+    function act(line) {
+        const words = line.trim().split(/\s+/);
+        const a = words[0];
+        const args = words.slice(1);
+        const rest = args.join(" ");
+        switch (a) {
+        case "show": show(); break;
+        case "toggle": toggle(); break;
+        case "close": case "hide": hide(); fieldClosed(); break;
+        case "open": show(); if (args[0]) openSession(args[0]); break;
+        case "new": show(); newSession(); break;
+        case "ask": ask(rest); break;
+        case "here": here(rest); break;
+        case "new-here": show(); pendingLink = linkKey(ctx, true); newSession(); break;
+        case "unlink": if (current) send_({ op: "link", id: current, key: "" }); break;
+        case "sessions": show(); tabsOpen = !tabsOpen; break;
+        case "stop": stop(); break;
+        case "archive": show(); askArchive(current); break;
+        case "allow": answerFirst(true); break;
+        case "deny": answerFirst(false); break;
+        case "drop-context": ctxOn = false; break;
+        case "float": setMode("float"); break;
+        case "dock": setMode("dock"); break;
+        case "width-narrow": setWidth(360); break;
+        case "width-medium": setWidth(440); break;
+        case "width-wide": setWidth(560); break;
+        case "answer": if (args[0]) answerArg(args[0]); break;
+        }
+    }
+    function setMode(m) {
+        mode = m;
+        saveView();
+    }
+    function setWidth(w) {
+        viewWidth = clampWidth(w);
+        saveView();
+    }
+    function answerArg(a) {
+        const i = a.lastIndexOf(":");
+        if (i > 0)
+            answer(a.slice(0, i), a.slice(i + 1) === "yes");
+    }
+    function answerFirst(allow) {
+        const a = log.find(i => i.kind === "ask" && i.status === "pending");
+        if (a)
+            answer(a.rid, allow);
+    }
+
+    // ───── notifications (notify-send; the shell shows them) ─────
+    // Allow / Deny answer through `fili-ai act answer`, the default action (a click) opens the session
+    function runDetached(script, args) {
+        Link.spawn("setsid", ["-f", "sh", "-c", script, "fili-ai"].concat(args).join("\u001f"));
+    }
+    function sessionTitle(id) {
+        return sessions.find(s => s.id === id)?.title || "Lia";
+    }
+    function notifyAsk(id, rid, tool, summary) {
+        runDetached('r="$(notify-send -a fili-ai -i fili-ai -u critical -t 120000 -h "string:x-fili-ai-rid:$2" -A allow="$5" -A deny="$6" -A default="$7" "$3" "$4")"\n'
+                    + 'case "$r" in allow) exec "$0" act answer "$2:yes" ;; deny) exec "$0" act answer "$2:no" ;; default) exec "$0" act open "$1" ;; esac',
+                    [id, rid, qsTr("Lia needs you") + " · " + sessionTitle(id), (tool ? tool + ": " : "") + summary, qsTr("Allow"), qsTr("Deny"), qsTr("Open")]);
+    }
+    function notify(id, summary, urgency) {
+        runDetached('r="$(notify-send -a fili-ai -i fili-ai -u "$2" -A default="$5" "$3" "$4")" && [ "$r" = default ] && exec "$0" act open "$1"',
+                    [id, urgency, summary, sessionTitle(id), qsTr("Open")]);
+    }
+
+    // ───── state for the shell (docs/api.md, "The assistant") ─────
+    function publishUi() {
+        const dir = Link.env("XDG_RUNTIME_DIR") || "/tmp";
+        Link.writeText(dir + "/fili/ai/ui.json", JSON.stringify({ v: 1, open: open, focused: focused, attention: attention, busy: busy }));
+    }
+    property Timer uiTimer: Timer {
+        interval: 40
+        onTriggered: chat.publishUi()
+    }
+    onOpenChanged: uiTimer.restart()
+    onFocusedChanged: uiTimer.restart()
+    onAttentionChanged: uiTimer.restart()
+    onBusyChanged: uiTimer.restart()
+
     function clampWidth(w) {
         return Math.max(300, Math.min(900, w));
     }
@@ -72,6 +308,7 @@ QtObject {
             send_({ op: "agent" });
             if (current)
                 send_({ op: "open", id: current });
+            askNow();
             return;
         }
         if (tries === 0)
@@ -87,18 +324,43 @@ QtObject {
         onTriggered: chat.connectNow()
     }
     function newSession() {
+        followPending = false;
         send_({ op: "new" });
     }
     function send(text) {
-        const t = text.trim();
-        if (!t)
+        let t = text.trim();
+        if (!t && !attached.length)
             return;
+        if (attached.length) {
+            t = (t || qsTr("Here are some files.")) + "\n\n" + qsTr("Attached files:") + "\n" + attached.join("\n");
+            attached = [];
+        }
+        followPending = false;
         if (!current) {
             pending = t;
+            if (ctxOn && !pendingLink)
+                pendingLink = linkKey(ctx);
             send_({ op: "new" });
             return;
         }
-        send_({ op: "send", id: current, text: t });
+        // First conversation with an application: the session links to it
+        const cur = sessions.find(x => x.id === current);
+        if (ctxOn && cur && !cur.link && linkKey(ctx))
+            send_({ op: "link", id: current, key: linkKey(ctx) });
+        const req = { op: "send", id: current, text: t };
+        if (ctxOn)
+            req.context = true;
+        ctxOn = false;
+        send_(req);
+    }
+    // Files attached to the next message (dropped, pasted)
+    property var attached: []
+    function attachUrls(urls) {
+        const p = urls.filter(u => u.startsWith("file://")).map(u => decodeURIComponent(u.slice(7)));
+        attached = attached.concat(p.filter(x => !attached.includes(x)));
+    }
+    function detach(p) {
+        attached = attached.filter(x => x !== p);
     }
     function answer(rid, allow) {
         send_({ op: "answer", rid, allow });
@@ -108,7 +370,37 @@ QtObject {
             send_({ op: "stop", id: current });
     }
     function askArchive(id) {
+        if (!id || !sessions.some(s => s.id === id))
+            return;
+        allOpen = false;
         confirmId = id;
+    }
+    function startRename() {
+        if (current)
+            renaming = true;
+    }
+    function commitRename(t) {
+        renaming = false;
+        if (current && t.trim() && t.trim() !== title)
+            send_({ op: "rename", id: current, title: t.trim() });
+        focusInput();
+    }
+    // An archived session is restored then opened
+    function pickSession(id) {
+        allOpen = false;
+        if (allSessions.find(s => s.id === id)?.archived)
+            send_({ op: "restore", id });
+        openSession(id);
+    }
+    function openSettings() {
+        Link.spawn("xdg-open", configHome + "/filigrane/fili-ai.toml");
+    }
+    // Ctrl+V: files (text/uri-list) attached; an image is saved in ~/.local/state/filigrane/chat/images then attached
+    function paste() {
+        const out = Link.capture('t="$(wl-paste -l 2>/dev/null)"; if printf "%s\\n" "$t" | grep -qx text/uri-list; then wl-paste -t text/uri-list 2>/dev/null; elif m="$(printf "%s\\n" "$t" | grep -x -m1 image/png || printf "%s\\n" "$t" | grep -m1 "^image/[a-z]*$")" && [ -n "$m" ]; then d="${XDG_STATE_HOME:-$HOME/.local/state}/filigrane/chat/images"; mkdir -p "$d"; f="$d/image-$(date +%Y%m%d-%H%M%S).${m#image/}"; wl-paste -t "$m" > "$f" 2>/dev/null && [ -s "$f" ] && echo "file://$f"; fi');
+        const urls = out.split("\n").map(l => l.trim()).filter(l => l.startsWith("file://"));
+        attachUrls(urls);
+        return urls.length > 0;
     }
     function confirmArchive(yes) {
         if (yes && confirmId)
@@ -116,13 +408,14 @@ QtObject {
         confirmId = "";
     }
     function openSession(id) {
-        const u = Object.assign({}, unread);
-        delete u[id];
-        unread = u;
+        followPending = false;
+        if (id === current)
+            return;
         current = id;
         live = "";
-        if (items[id] === undefined)
-            send_({ op: "open", id });
+        markRead();
+        send_({ op: "open", id });
+        focusInput();
     }
 
     function append(id, item) {
@@ -142,7 +435,9 @@ QtObject {
         if (ev.ev === "agent") {
             agentOk = ev.ok === true;
         } else if (ev.ev === "sessions") {
+            allSessions = ev.sessions;
             sessions = ev.sessions.filter(s => !s.archived);
+            sessionsFresh = true;
             const m = Object.assign({}, states);
             for (const s of sessions)
                 m[s.id] = s.state;
@@ -152,16 +447,30 @@ QtObject {
                 if (current && items[current] === undefined)
                     send_({ op: "open", id: current });
             }
+            tryFollow();
+            hereNow();
         } else if (ev.ev === "created") {
             const m = Object.assign({}, items);
             m[ev.id] = [];
             items = m;
             current = ev.id;
             live = "";
+            if (pendingLink) {
+                send_({ op: "link", id: ev.id, key: pendingLink });
+                pendingLink = "";
+            }
+            if (pendingScope) {
+                send_({ op: "scope", id: ev.id, on: true });
+                pendingScope = false;
+            }
             if (pending) {
                 const t = pending;
                 pending = "";
-                send_({ op: "send", id: ev.id, text: t });
+                const req = { op: "send", id: ev.id, text: t };
+                if (ctxOn)
+                    req.context = true;
+                ctxOn = false;
+                send_(req);
             }
         } else if (ev.ev === "queue") {
             const q = Object.assign({}, queued);
@@ -180,6 +489,8 @@ QtObject {
                 return;
             const a = items[ev.id].slice();
             const i = a.findIndex(x => x.kind === "ask" && x.rid === ev.rid);
+            if (ev.status === "pending" && i < 0 && !(open && ev.id === current))
+                notifyAsk(ev.id, ev.rid, ev.tool, ev.summary);
             if (i >= 0)
                 a[i] = item(ev);
             else
@@ -195,12 +506,16 @@ QtObject {
             const m = Object.assign({}, states);
             m[ev.id] = ev.state;
             states = m;
+            if (ev.state !== "idle")
+                awaiting = false;
             if (ev.state === "idle" && ev.id === current)
                 live = "";
-            if (ev.state === "idle" && was !== "idle" && ev.id !== current) {
+            // Turn finished out of sight of the drawer: to read, and announced
+            if (ev.state === "idle" && was !== "idle" && !(open && ev.id === current)) {
                 const u = Object.assign({}, unread);
                 u[ev.id] = true;
                 unread = u;
+                notify(ev.id, qsTr("Lia has finished"), "normal");
             }
         } else if (ev.ev === "note") {
             append(ev.id, { kind: "note", text: ev.code === "interrupted" ? qsTr("Interrupted") : ev.code, name: "" });
@@ -214,7 +529,9 @@ QtObject {
             } catch (e) {}
         }
         function onConnectedChanged() {
-            if (!Link.connected && chat.tries < 40)
+            if (Link.connected)
+                chat.tries = 0;
+            else if (chat.wantLink && chat.tries < 40)
                 chat.connectNow();
         }
     }

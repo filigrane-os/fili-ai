@@ -426,7 +426,8 @@ fn spawn_agent(d: &mut Daemon, id: &str) -> Result<(), String> {
     let path = format!("{}/.local/bin:{}", home(), env::var("PATH").unwrap_or_default());
     cmd.current_dir(&c.dir)
         .env("PATH", path)
-        .env("FILI_ROB", "1")
+        // Marks the sessions of the drawer for the hooks of the agents (generic: whatever the assistant is called)
+        .env("FILI_AGENT_IA", "1")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         // stderr of the agent kept (<id>.err, overwritten at each start): the only trace of a "The agent stopped"

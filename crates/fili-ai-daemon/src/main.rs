@@ -3,8 +3,8 @@
 // fili-ai daemon          daemon (started by the drawer on first display; it stops without a client or an agent)
 // fili-ai toggle          Mod+Y: notes the active application (fili-context), then shows or hides the drawer
 // fili-ai ask TEXT        notes the active application the same way, then asks TEXT in a new session (an
-//                           application's button, e.g. Aéroport's "Ask Rob": the details are in its context)
-// fili-ai here [TEXT]     Mod+Ctrl+Y, "Ask Rob…" of every application menu: notes the active application, then creates
+//                           application's button, e.g. Aéroport's "Ask Lia": the details are in its context)
+// fili-ai here [TEXT]     Mod+Ctrl+Y, "Ask Lia…" of every application menu: notes the active application, then creates
 //                           a new session scoped to it, with TEXT sent if given
 // fili-ai sessions          sessions as JSON (the daemon must be running)
 // fili-ai send ID TEXT    message to a session, reply printed on the output (tests in a terminal)
@@ -72,7 +72,7 @@ fn chat_dir() -> PathBuf {
 // ───── settings (ai.env) ─────
 struct Conf {
     model: String,
-    rob_model: String, // model of the sessions scoped to an application ("Ask Rob"): short requests, speed matters
+    rob_model: String, // model of the sessions scoped to an application ("Ask Lia"): short requests, speed matters
     args: Vec<String>,
     dir: String,
 }
@@ -97,7 +97,7 @@ fn conf() -> Conf {
         .map(|a| if let Some(r) = a.strip_prefix('~') { format!("{}{r}", home()) } else { a.to_string() })
         .collect();
     // Absent = sonnet; "default" = the model of the agent (same as FILI_AI_MODEL)
-    let rob_model = match kv.get("FILI_ROB_MODEL").map(String::as_str) {
+    let rob_model = match kv.get("FILI_LIA_MODEL").or_else(|| kv.get("FILI_ROB_MODEL")).map(String::as_str) {
         None => "sonnet".to_string(),
         Some("default") => get("FILI_AI_MODEL"),
         Some(m) => m.to_string(),
@@ -132,7 +132,7 @@ struct Session {
     updated: i64,
     started: bool, // the agent has already received a message: resume with --resume
     link: String,  // application (or window) the session is linked to, "" = none
-    scoped: bool,  // "Ask Rob" of an application: the agent works only on that application
+    scoped: bool,  // "Ask Lia" of an application: the agent works only on that application
     child: Option<Child>,
     stdin: Option<ChildStdin>,
     epoch: u64, // number of the current process (the end of an old process is ignored)
@@ -725,7 +725,7 @@ fn package_file(rel: &str) -> Option<PathBuf> {
         .find(|p| p.is_file())
 }
 
-/// Instruction of a scoped session ("Ask Rob" of an application): the link key is the app_id, then the window title
+/// Instruction of a scoped session ("Ask Lia" of an application): the link key is the app_id, then the window title
 fn scope_line(link: &str) -> String {
     let app = link.split('\n').next().unwrap_or("");
     format!(

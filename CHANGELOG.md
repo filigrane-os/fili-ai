@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- The xbps package replaces the former packages `fili-ai-daemon` and `fili-ai-session` (their programs are part of `fili-ai`
+  now), so that an update does not stop on a file conflict.
+
 ## 0.1.1
 
 - The icon: a line portrait of a girl with long wavy hair, on the nuit tile of the brand.

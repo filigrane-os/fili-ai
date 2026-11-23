@@ -24,6 +24,8 @@ pub mod qobject {
         #[qproperty(bool, light, READ, WRITE, NOTIFY = theme_changed)]
         #[qproperty(QString, accent, READ, WRITE, NOTIFY = theme_changed)]
         #[qproperty(i32, settings_rev, cxx_name = "settingsRev", READ, WRITE, NOTIFY = theme_changed)]
+        // The keyboard was used last: the focus ring shows (the kit sets it)
+        #[qproperty(bool, key_nav, cxx_name = "keyNav")]
         type Link = super::LinkRust;
 
         #[qsignal]
@@ -129,6 +131,7 @@ pub struct LinkRust {
     light: bool,
     accent: QString,
     settings_rev: i32,
+    key_nav: bool,
     writer: Option<UnixStream>,
 }
 

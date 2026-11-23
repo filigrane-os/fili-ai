@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Fili.Ai
+import Fili.UI
 
 Item {
     id: bubble
@@ -10,46 +11,54 @@ Item {
     readonly property bool isAsk: modelData.kind === "ask"
     readonly property bool quiet: modelData.kind === "tool" || modelData.kind === "note"
     width: ListView.view ? ListView.view.width : 300
-    implicitHeight: card.height + Theme.space2
+    implicitHeight: card.height + FiliTheme.space2
 
     Rectangle {
         id: card
-        width: Math.min(parent.width - Theme.space4, Math.max(label.implicitWidth, ask.visible ? ask.implicitWidth : 0) + Theme.space4)
-        x: bubble.isUser ? parent.width - width - Theme.space2 : Theme.space2
-        height: col.implicitHeight + Theme.space3
-        radius: Theme.radiusControl
-        color: bubble.isUser ? Theme.surfaceHover : bubble.isAsk ? Theme.surface : "transparent"
-        border { width: bubble.isAsk ? Theme.borderWidth : 0; color: Theme.warning }
+        width: Math.min(parent.width - FiliTheme.space4, Math.max(label.implicitWidth, ask.visible ? ask.implicitWidth : 0) + FiliTheme.space4)
+        x: bubble.isUser ? parent.width - width - FiliTheme.space2 : FiliTheme.space2
+        height: col.implicitHeight + FiliTheme.space3
+        radius: FiliTheme.radiusControl
+        color: bubble.isUser ? FiliTheme.surfaceHover : bubble.isAsk ? FiliTheme.surface : "transparent"
+        border { width: bubble.isAsk ? FiliTheme.borderWidth : 0; color: FiliTheme.warning }
 
         ColumnLayout {
             id: col
-            x: Theme.space2
-            y: Theme.space1 + 2
-            width: parent.width - Theme.space4
-            spacing: Theme.space1
-            Text {
+            x: FiliTheme.space2
+            y: FiliTheme.space1 + 2
+            width: parent.width - FiliTheme.space4
+            spacing: FiliTheme.space1
+            // Read-only text edit: the text can be selected with the mouse (Ctrl+C copies it, see Drawer.qml). It does not take the
+            // keyboard focus: the field of the message keeps it
+            TextEdit {
                 id: label
                 Layout.fillWidth: true
+                readOnly: true
+                selectByMouse: true
+                activeFocusOnPress: false
+                selectionColor: FiliTheme.accentColor
+                selectedTextColor: FiliTheme.background
+                onSelectedTextChanged: if (selectedText !== "") Chat.picked = selectedText
                 text: bubble.isAsk ? (modelData.name ? modelData.name + ": " : "") + modelData.text : modelData.text
-                textFormat: Text.PlainText
-                wrapMode: Text.Wrap
-                color: modelData.kind === "error" ? Theme.danger : bubble.quiet ? Theme.muted : Theme.text
-                font { family: bubble.quiet ? Theme.mono : Theme.font; pixelSize: bubble.quiet ? Theme.sizeSmall : Theme.size; italic: modelData.kind === "note" }
+                textFormat: TextEdit.PlainText
+                wrapMode: TextEdit.Wrap
+                color: modelData.kind === "error" ? FiliTheme.danger : bubble.quiet ? FiliTheme.muted : FiliTheme.text
+                font { family: bubble.quiet ? FiliTheme.mono : FiliTheme.font; pixelSize: bubble.quiet ? FiliTheme.sizeSmall : FiliTheme.size; italic: modelData.kind === "note" }
             }
             RowLayout {
                 id: ask
                 visible: bubble.isAsk && modelData.status === "pending"
-                spacing: Theme.space2
+                spacing: FiliTheme.space2
                 Repeater {
                     model: [{ t: Link.tr("Allow"), v: true }, { t: Link.tr("Deny"), v: false }]
                     Rectangle {
                         required property var modelData
-                        implicitWidth: btn.implicitWidth + Theme.space4
+                        implicitWidth: btn.implicitWidth + FiliTheme.space4
                         implicitHeight: 26
-                        radius: Theme.radiusControl
-                        color: hit.containsMouse ? Theme.surfaceHover : Theme.background
-                        border { width: Theme.borderWidth; color: Theme.border }
-                        Text { id: btn; anchors.centerIn: parent; text: parent.modelData.t; color: Theme.text; font { family: Theme.font; pixelSize: Theme.sizeList } }
+                        radius: FiliTheme.radiusControl
+                        color: hit.containsMouse ? FiliTheme.surfaceHover : FiliTheme.background
+                        border { width: FiliTheme.borderWidth; color: FiliTheme.border }
+                        Text { id: btn; anchors.centerIn: parent; text: parent.modelData.t; color: FiliTheme.text; font { family: FiliTheme.font; pixelSize: FiliTheme.sizeList } }
                         MouseArea { id: hit; anchors.fill: parent; hoverEnabled: true; onClicked: Chat.answer(bubble.modelData.rid, parent.modelData.v) }
                     }
                 }
@@ -57,8 +66,8 @@ Item {
             Text {
                 visible: bubble.isAsk && modelData.status !== "pending"
                 text: modelData.status === "allowed" || modelData.status === "allow" ? Link.tr("Allowed") : Link.tr("Denied")
-                color: Theme.muted
-                font { family: Theme.font; pixelSize: Theme.sizeSmall }
+                color: FiliTheme.muted
+                font { family: FiliTheme.font; pixelSize: FiliTheme.sizeSmall }
             }
         }
     }

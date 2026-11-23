@@ -10,6 +10,8 @@ QtObject {
     // Tests (`fili-ai-window --test`, qml/TestMain.qml): nothing leaves the process; what would have been sent to the daemon,
     // run as a command or written for the shell is kept in these lists instead
     property bool testing: false
+    // The text last selected in the conversation (Ctrl+C copies it)
+    property string picked: ""
     property var sent: []
     property var ran: []
     property var published: []

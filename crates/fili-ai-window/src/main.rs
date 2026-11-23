@@ -1,5 +1,7 @@
 // fili-ai-window: the window of Lia, the assistant of Filigrane (drawer on the right edge, layer-shell).
 // The daemon (fili-ai-daemon) keeps the sessions; this window shows them and sends the messages.
+use fili_ui as _;
+
 mod ctl;
 mod i18n;
 mod icons;
@@ -75,6 +77,27 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::command_of;
+    use std::fs;
+
+    // A misspelled token does not fail at run time: the item just stays transparent
+    #[test]
+    fn every_theme_token_used_in_qml_is_defined() {
+        let defined: Vec<String> = fs::read_to_string(env!("FILI_UI_THEME_QML"))
+            .unwrap()
+            .lines()
+            .filter_map(|l| l.trim().strip_prefix("readonly property "))
+            .filter_map(|l| Some(l.split(':').next()?.split_whitespace().last()?.to_string()))
+            .chain(["alpha".to_string()])
+            .collect();
+        for entry in fs::read_dir(format!("{}/qml", env!("CARGO_MANIFEST_DIR"))).unwrap() {
+            let path = entry.unwrap().path();
+            let text = fs::read_to_string(&path).unwrap();
+            for (i, _) in text.match_indices("FiliTheme.") {
+                let name: String = text[i + 10..].chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+                assert!(defined.contains(&name), "{}: FiliTheme.{name} is not defined", path.display());
+            }
+        }
+    }
 
     #[test]
     fn a_command_is_one_line_without_flags() {

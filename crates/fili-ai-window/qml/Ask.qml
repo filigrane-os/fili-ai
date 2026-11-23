@@ -8,6 +8,7 @@ import QtQuick.Window
 import QtQuick.Layouts
 import org.kde.layershell 1.0 as LayerShell
 import Fili.Ai
+import Fili.UI
 
 Window {
     id: ask
@@ -50,40 +51,40 @@ Window {
     MouseArea { anchors.fill: parent; onPressed: ask.close() }
     Rectangle {
         anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: Math.round(parent.height * 0.18) }
-        width: Math.min(parent.width - 2 * Theme.space4, 520)
-        height: col.implicitHeight + 2 * Theme.space4
-        color: Theme.background
-        border { color: Theme.border; width: Theme.borderWidth }
-        radius: Theme.radiusWindow
+        width: Math.min(parent.width - 2 * FiliTheme.space4, 520)
+        height: col.implicitHeight + 2 * FiliTheme.space4
+        color: FiliTheme.background
+        border { color: FiliTheme.border; width: FiliTheme.borderWidth }
+        radius: FiliTheme.radiusWindow
         MouseArea { anchors.fill: parent }
         ColumnLayout {
             id: col
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.space4 }
-            spacing: Theme.space2
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: FiliTheme.space4 }
+            spacing: FiliTheme.space2
             RowLayout {
                 Layout.fillWidth: true
-                spacing: Theme.space2
-                Text { text: String.fromCodePoint(0xf06a9); color: Theme.working; font { family: Theme.icons; pixelSize: 16 } }
+                spacing: FiliTheme.space2
+                Text { text: String.fromCodePoint(0xf06a9); color: LiaTheme.working; font { family: FiliTheme.icons; pixelSize: 16 } }
                 Text {
                     Layout.fillWidth: true
                     text: ask.appId ? Link.tr("Lia, about %1").replace("%1", ask.appId) : "Lia"
                     elide: Text.ElideRight
-                    color: Theme.textSecondary
-                    font { family: Theme.font; pixelSize: Theme.sizeSmall; weight: Theme.weightAccent }
+                    color: FiliTheme.textSecondary
+                    font { family: FiliTheme.font; pixelSize: FiliTheme.sizeSmall; weight: FiliTheme.weightAccent }
                 }
             }
             TextInput {
                 id: input
                 Layout.fillWidth: true
-                color: Theme.text
-                selectionColor: Theme.surfaceHover
-                selectedTextColor: Theme.text
-                font { family: Theme.font; pixelSize: Theme.size + 2; weight: Font.Light }
+                color: FiliTheme.text
+                selectionColor: FiliTheme.surfaceHover
+                selectedTextColor: FiliTheme.text
+                font { family: FiliTheme.font; pixelSize: FiliTheme.size + 2; weight: Font.Light }
                 clip: true
                 Text {
                     visible: !input.text
                     text: Link.tr("Ask anything about this application…")
-                    color: Theme.muted
+                    color: FiliTheme.muted
                     font: input.font
                     elide: Text.ElideRight
                     width: parent.width
@@ -101,8 +102,8 @@ Window {
                 Layout.fillWidth: true
                 text: Link.tr("Enter to send · Shift+Enter to send without opening the drawer · Esc to cancel")
                 elide: Text.ElideRight
-                color: Theme.muted
-                font { family: Theme.font; pixelSize: Theme.sizeSmall }
+                color: FiliTheme.muted
+                font { family: FiliTheme.font; pixelSize: FiliTheme.sizeSmall }
             }
         }
     }

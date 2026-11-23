@@ -19,7 +19,7 @@ BINS = fili-ai-daemon fili-ai-session fili-ai-window
 QMAKE ?= $(firstword $(wildcard /usr/lib/qt6/bin/qmake6 /usr/lib64/qt6/bin/qmake6 /usr/lib/qt6/bin/qmake /usr/lib64/qt6/bin/qmake) $(shell command -v qmake6 qmake-qt6 2>/dev/null))
 export QMAKE
 
-.PHONY: all build test check install install-data uninstall
+.PHONY: all build dev test check install install-data uninstall
 
 all: build
 
@@ -57,3 +57,7 @@ uninstall:
 	rm -rf $(DESTDIR)$(DATADIR)/licenses/fili-ai $(DESTDIR)$(DATADIR)/fili-ai $(DESTDIR)$(DATADIR)/doc/fili-ai
 	rm -f $(DESTDIR)$(DATADIR)/applications/fili-ai.desktop
 	rm -f $(DESTDIR)$(DATADIR)/filigrane/shell/ctl/fili-ai.json $(DESTDIR)$(DATADIR)/filigrane/shell/appmenu/fili-ai.json $(DESTDIR)$(DATADIR)/filigrane/shell/lia/fili-ai.md $(DESTDIR)$(DATADIR)/filigrane/shell/incident/lia.toml
+
+# Development: builds without link-time optimisation (target/fast, incremental)
+dev:
+	$(CARGO) build --profile fast

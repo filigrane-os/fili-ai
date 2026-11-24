@@ -2,9 +2,12 @@
 // inside another would be its child and stay hidden), driven by the commands of Chat (`fili-ai toggle|show|here|...`).
 import QtQuick
 import Fili.Ai
+import Fili.UI
 
 QtObject {
     id: root
+    // The kit reads the theme through the application's object. Evaluated first: the tokens must be right from the first binding
+    property bool kitReady: { FiliHost.backend = Link; return true; }
     property Window drawer: Drawer {}
     property Window field: Ask {}
     property Window aboutCard: About {}

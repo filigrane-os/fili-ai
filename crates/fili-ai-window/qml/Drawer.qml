@@ -6,6 +6,7 @@ import QtQuick.Window
 import QtQuick.Layouts
 import org.kde.layershell 1.0 as LayerShell
 import Fili.Ai
+import Fili.UI
 
 Window {
     id: win
@@ -71,9 +72,9 @@ Window {
 
         Rectangle {
             anchors.fill: parent
-            color: Theme.background
+            color: FiliTheme.background
             radius: 8
-            border { width: Theme.borderWidth; color: Theme.border }
+            border { width: FiliTheme.borderWidth; color: FiliTheme.border }
             clip: true
 
             // Files dragged from an application: attached to the next message
@@ -90,18 +91,18 @@ Window {
                 // Header 44: title of the session, state, new session
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Theme.headerHeight
+                    Layout.preferredHeight: FiliTheme.toolbarHeight
                     color: "transparent"
                     RowLayout {
-                        anchors { fill: parent; leftMargin: Theme.space3; rightMargin: Theme.space3 }
-                        spacing: Theme.space2
+                        anchors { fill: parent; leftMargin: FiliTheme.space3; rightMargin: FiliTheme.space3 }
+                        spacing: FiliTheme.space2
                         Text {
                             Layout.fillWidth: true
                             visible: !Chat.renaming
                             text: Chat.title
                             elide: Text.ElideRight
-                            color: Theme.text
-                            font { family: Theme.font; pixelSize: Theme.size; weight: Theme.weightAccent }
+                            color: FiliTheme.text
+                            font { family: FiliTheme.font; pixelSize: FiliTheme.size; weight: FiliTheme.weightAccent }
                             MouseArea { anchors.fill: parent; onDoubleClicked: Chat.startRename() }
                         }
                         // Rename (F2 or double click): Enter keeps, Escape cancels
@@ -110,10 +111,10 @@ Window {
                             Layout.fillWidth: true
                             visible: Chat.renaming
                             text: Chat.title
-                            color: Theme.text
-                            selectionColor: Theme.surfaceHover
-                            selectedTextColor: Theme.text
-                            font { family: Theme.font; pixelSize: Theme.size; weight: Theme.weightAccent }
+                            color: FiliTheme.text
+                            selectionColor: FiliTheme.surfaceHover
+                            selectedTextColor: FiliTheme.text
+                            font { family: FiliTheme.font; pixelSize: FiliTheme.size; weight: FiliTheme.weightAccent }
                             clip: true
                             onVisibleChanged: if (visible) { forceActiveFocus(); selectAll(); }
                             Keys.onReturnPressed: Chat.commitRename(text)
@@ -123,14 +124,14 @@ Window {
                         Text {
                             visible: Chat.working
                             text: Chat.waiting ? Link.tr("waiting for you") : Link.tr("working")
-                            color: Chat.waiting ? Theme.warning : Theme.textSecondary
-                            font { family: Theme.font; pixelSize: Theme.sizeSmall }
+                            color: Chat.waiting ? FiliTheme.warning : FiliTheme.textSecondary
+                            font { family: FiliTheme.font; pixelSize: FiliTheme.sizeSmall }
                         }
-                        IconButton { glyph: "≡"; tip: Link.tr("Sessions"); on: Chat.tabsOpen; onClicked: Chat.tabsOpen = !Chat.tabsOpen }
-                        IconButton { glyph: "+"; tip: Link.tr("New session"); onClicked: Chat.newSession() }
-                        IconButton { glyph: "×"; tip: Link.tr("Close"); onClicked: Chat.hide() }
+                        FiliIconButton { glyph: "≡"; size: FiliTheme.sizeTitle; implicitHeight: 28; tip: Link.tr("Sessions"); toggled: Chat.tabsOpen; onClicked: Chat.tabsOpen = !Chat.tabsOpen }
+                        FiliIconButton { glyph: "+"; size: FiliTheme.sizeTitle; implicitHeight: 28; tip: Link.tr("New session"); onClicked: Chat.newSession() }
+                        FiliIconButton { glyph: "×"; size: FiliTheme.sizeTitle; implicitHeight: 28; tip: Link.tr("Close"); onClicked: Chat.hide() }
                     }
-                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.borderWidth; color: Theme.border }
+                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: FiliTheme.borderWidth; color: FiliTheme.border }
                 }
 
                 RowLayout {
@@ -146,7 +147,7 @@ Window {
                         visible: Chat.tabsOpen
                         Layout.fillHeight: true
                         Layout.preferredWidth: 52
-                        color: Theme.backgroundDeep
+                        color: FiliTheme.backgroundDeep
                         // The bottom left corner follows the rounded corner of the drawer (a Rectangle does not clip to a rounded
                         // parent): the rail is rounded, and two plain strips give back the square top and right edges
                         radius: 8
@@ -157,8 +158,7 @@ Window {
                         property real tipY: 0
                         ListView {
                             id: sessions
-                            anchors { left: parent.left; right: parent.right; top: parent.top; bottom: foot.top; rightMargin: Theme.borderWidth }
-                            topMargin: Theme.space2
+                            anchors { left: parent.left; right: parent.right; top: parent.top; bottom: foot.top; rightMargin: FiliTheme.borderWidth }
                             clip: true
                             boundsBehavior: Flickable.StopAtBounds
                             model: Chat.tabSessions
@@ -172,7 +172,7 @@ Window {
                                 readonly property int topic: modelData.icon ?? 0
                                 width: sessions.width
                                 height: 48
-                                color: sel || rowHover.hovered ? Theme.surfaceHover : "transparent"
+                                color: sel || rowHover.hovered ? FiliTheme.surfaceHover : "transparent"
                                 HoverHandler {
                                     id: rowHover
                                     onHoveredChanged: {
@@ -195,23 +195,23 @@ Window {
                                     anchors.centerIn: parent
                                     visible: row.topic !== 0 || row.appIcon === ""
                                     text: String.fromCodePoint(row.topic !== 0 ? row.topic : 0xF05A3)
-                                    color: row.sel ? Theme.text : Theme.textSecondary
-                                    font { family: Theme.icons; pixelSize: 24 }
+                                    color: row.sel ? FiliTheme.text : FiliTheme.textSecondary
+                                    font { family: FiliTheme.icons; pixelSize: 24 }
                                 }
                                 Rectangle {
-                                    anchors { right: parent.right; rightMargin: Theme.space2; top: parent.top; topMargin: Theme.space2 }
+                                    anchors { right: parent.right; rightMargin: FiliTheme.space2; top: parent.top; topMargin: FiliTheme.space2 }
                                     width: 10; height: 10; radius: 5
                                     visible: color.a > 0
-                                    color: row.st === "waiting" ? Theme.danger : row.st !== "idle" ? Theme.working : Chat.unread[row.modelData.id] ? Theme.success : "transparent"
-                                    border { width: 2; color: Theme.backgroundDeep }
+                                    color: row.st === "waiting" ? FiliTheme.danger : row.st !== "idle" ? LiaTheme.working : Chat.unread[row.modelData.id] ? LiaTheme.success : "transparent"
+                                    border { width: 2; color: FiliTheme.backgroundDeep }
                                 }
                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Chat.openSession(row.modelData.id) }
                                 Text {
-                                    anchors { left: parent.left; leftMargin: Theme.space1 + 2; top: parent.top }
+                                    anchors { left: parent.left; leftMargin: FiliTheme.space1 + 2; top: parent.top }
                                     visible: rowHover.hovered
                                     text: "×"
-                                    color: archiveHit.containsMouse ? Theme.danger : Theme.textSecondary
-                                    font { family: Theme.font; pixelSize: 16 }
+                                    color: archiveHit.containsMouse ? FiliTheme.danger : FiliTheme.textSecondary
+                                    font { family: FiliTheme.font; pixelSize: 16 }
                                     MouseArea {
                                         id: archiveHit
                                         anchors { fill: parent; margins: -6 }
@@ -225,8 +225,8 @@ Window {
                         // Footer of the rail: all the sessions (archived included) and the settings
                         Column {
                             id: foot
-                            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; rightMargin: Theme.borderWidth }
-                            Rectangle { width: parent.width; height: Theme.borderWidth; color: Theme.border }
+                            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; rightMargin: FiliTheme.borderWidth }
+                            Rectangle { width: parent.width; height: FiliTheme.borderWidth; color: FiliTheme.border }
                             Repeater {
                                 model: [{ glyph: 0xF2F00, tip: Link.tr("All sessions"), act: "all" }, { glyph: 0xF2F01, tip: Link.tr("Settings…"), act: "settings" }]
                                 Rectangle {
@@ -234,12 +234,12 @@ Window {
                                     required property var modelData
                                     width: foot.width
                                     height: 40
-                                    color: fHover.hovered || (modelData.act === "all" && Chat.allOpen) ? Theme.surfaceHover : "transparent"
+                                    color: fHover.hovered || (modelData.act === "all" && Chat.allOpen) ? FiliTheme.surfaceHover : "transparent"
                                     HoverHandler {
                                         id: fHover
                                         onHoveredChanged: if (hovered) { rail.tipText = fbtn.modelData.tip; rail.tipY = fbtn.mapToItem(rail, 0, 0).y; }
                                     }
-                                    Text { anchors.centerIn: parent; text: String.fromCodePoint(fbtn.modelData.glyph); color: Theme.textSecondary; font { family: Theme.icons; pixelSize: 22 } }
+                                    Text { anchors.centerIn: parent; text: String.fromCodePoint(fbtn.modelData.glyph); color: FiliTheme.textSecondary; font { family: FiliTheme.icons; pixelSize: 22 } }
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
@@ -248,7 +248,7 @@ Window {
                                 }
                             }
                         }
-                        Rectangle { anchors.right: parent.right; width: Theme.borderWidth; height: parent.height; color: Theme.border }
+                        Rectangle { anchors.right: parent.right; width: FiliTheme.borderWidth; height: parent.height; color: FiliTheme.border }
                     }
 
                     ColumnLayout {
@@ -267,15 +267,22 @@ Window {
                         KineticScroll {}
                         footer: Item {
                             width: list.width
-                            height: live.visible ? live.height + Theme.space3 : 0
-                            Text {
+                            height: live.visible ? live.height + FiliTheme.space3 : 0
+                            TextEdit {
                                 id: live
                                 visible: Chat.live !== ""
-                                x: Theme.space3; width: parent.width - Theme.space4
+                                x: FiliTheme.space3; width: parent.width - FiliTheme.space4
+                                readOnly: true
+                                selectByMouse: true
+                                activeFocusOnPress: false
+                                selectionColor: FiliTheme.accentColor
+                                selectedTextColor: FiliTheme.background
+                                onSelectedTextChanged: if (selectedText !== "") Chat.picked = selectedText
                                 text: Chat.live
-                                wrapMode: Text.Wrap
-                                color: Theme.text
-                                font { family: Theme.font; pixelSize: Theme.size }
+                                textFormat: TextEdit.PlainText
+                                wrapMode: TextEdit.Wrap
+                                color: FiliTheme.text
+                                font { family: FiliTheme.font; pixelSize: FiliTheme.size }
                             }
                         }
                         FiliScrollBar { flick: list; anchors { top: parent.top; bottom: parent.bottom; right: parent.right } }
@@ -284,7 +291,7 @@ Window {
                         Rectangle {
                             anchors.fill: parent
                             visible: Chat.allOpen
-                            color: Theme.background
+                            color: FiliTheme.background
                             ListView {
                                 anchors.fill: parent
                                 clip: true
@@ -293,15 +300,15 @@ Window {
                                     required property var modelData
                                     width: ListView.view.width
                                     height: 36
-                                    color: aHover.hovered ? Theme.surfaceHover : "transparent"
+                                    color: aHover.hovered ? FiliTheme.surfaceHover : "transparent"
                                     HoverHandler { id: aHover }
                                     Text {
-                                        anchors { fill: parent; leftMargin: Theme.space3; rightMargin: Theme.space3 }
+                                        anchors { fill: parent; leftMargin: FiliTheme.space3; rightMargin: FiliTheme.space3 }
                                         verticalAlignment: Text.AlignVCenter
                                         text: (modelData.archived ? "⌫ " : "") + (modelData.title || Link.tr("New session"))
                                         elide: Text.ElideRight
-                                        color: modelData.archived ? Theme.muted : Theme.text
-                                        font { family: Theme.font; pixelSize: Theme.sizeList }
+                                        color: modelData.archived ? FiliTheme.muted : FiliTheme.text
+                                        font { family: FiliTheme.font; pixelSize: FiliTheme.sizeList }
                                     }
                                     MouseArea { anchors.fill: parent; onClicked: Chat.pickSession(modelData.id) }
                                 }
@@ -311,8 +318,8 @@ Window {
                             anchors.centerIn: parent
                             visible: !Chat.agentOk || (Chat.log.length === 0 && Chat.live === "")
                             text: !Chat.linked ? Link.tr("Connecting…") : !Chat.agentOk ? Link.tr("No agent installed (fili-ai install)") : Link.tr("Ask Lia")
-                            color: Theme.muted
-                            font { family: Theme.font; pixelSize: Theme.size }
+                            color: FiliTheme.muted
+                            font { family: FiliTheme.font; pixelSize: FiliTheme.size }
                         }
                     }
 
@@ -320,31 +327,31 @@ Window {
                     Rectangle {
                         visible: Chat.confirmId !== ""
                         Layout.fillWidth: true
-                        Layout.margins: Theme.space2
+                        Layout.margins: FiliTheme.space2
                         Layout.bottomMargin: 0
                         implicitHeight: 40
-                        radius: Theme.radiusControl
-                        color: Theme.surface
-                        border { width: Theme.borderWidth; color: Theme.danger }
+                        radius: FiliTheme.radiusControl
+                        color: FiliTheme.surface
+                        border { width: FiliTheme.borderWidth; color: FiliTheme.danger }
                         RowLayout {
-                            anchors { fill: parent; leftMargin: Theme.space3; rightMargin: Theme.space2 }
+                            anchors { fill: parent; leftMargin: FiliTheme.space3; rightMargin: FiliTheme.space2 }
                             Text {
                                 Layout.fillWidth: true
                                 text: Link.tr("Archive this session?")
                                 elide: Text.ElideRight
-                                color: Theme.text
-                                font { family: Theme.font; pixelSize: Theme.sizeList }
+                                color: FiliTheme.text
+                                font { family: FiliTheme.font; pixelSize: FiliTheme.sizeList }
                             }
                             Repeater {
                                 model: [{ t: Link.tr("Archive"), v: true }, { t: Link.tr("Cancel"), v: false }]
                                 Rectangle {
                                     required property var modelData
-                                    implicitWidth: lbl.implicitWidth + Theme.space4
+                                    implicitWidth: lbl.implicitWidth + FiliTheme.space4
                                     implicitHeight: 26
-                                    radius: Theme.radiusControl
-                                    color: hit.containsMouse ? Theme.surfaceHover : Theme.background
-                                    border { width: Theme.borderWidth; color: Theme.border }
-                                    Text { id: lbl; anchors.centerIn: parent; text: parent.modelData.t; color: Theme.text; font { family: Theme.font; pixelSize: Theme.sizeList } }
+                                    radius: FiliTheme.radiusControl
+                                    color: hit.containsMouse ? FiliTheme.surfaceHover : FiliTheme.background
+                                    border { width: FiliTheme.borderWidth; color: FiliTheme.border }
+                                    Text { id: lbl; anchors.centerIn: parent; text: parent.modelData.t; color: FiliTheme.text; font { family: FiliTheme.font; pixelSize: FiliTheme.sizeList } }
                                     MouseArea { id: hit; anchors.fill: parent; hoverEnabled: true; onClicked: Chat.confirmArchive(parent.modelData.v) }
                                 }
                             }
@@ -355,32 +362,32 @@ Window {
                     Flow {
                         visible: Chat.ctxOn || Chat.attached.length > 0
                         Layout.fillWidth: true
-                        Layout.leftMargin: Theme.space2
-                        Layout.rightMargin: Theme.space2
-                        spacing: Theme.space1
+                        Layout.leftMargin: FiliTheme.space2
+                        Layout.rightMargin: FiliTheme.space2
+                        spacing: FiliTheme.space1
                         Repeater {
                             model: (Chat.ctxOn ? [{ label: Chat.ctxLabel, ctx: true }] : []).concat(Chat.attached.map(p => ({ label: p.split("/").pop(), path: p })))
                             Rectangle {
                                 required property var modelData
                                 width: Math.min(chipText.implicitWidth + 28, 300)
                                 height: 24
-                                radius: Theme.radiusControl
-                                color: Theme.surface
-                                border { width: Theme.borderWidth; color: Theme.border }
+                                radius: FiliTheme.radiusControl
+                                color: FiliTheme.surface
+                                border { width: FiliTheme.borderWidth; color: FiliTheme.border }
                                 Text {
                                     id: chipText
-                                    anchors { left: parent.left; leftMargin: Theme.space2; right: x1.left; verticalCenter: parent.verticalCenter }
+                                    anchors { left: parent.left; leftMargin: FiliTheme.space2; right: x1.left; verticalCenter: parent.verticalCenter }
                                     text: modelData.label
                                     elide: Text.ElideRight
-                                    color: Theme.textSecondary
-                                    font { family: Theme.font; pixelSize: Theme.sizeSmall }
+                                    color: FiliTheme.textSecondary
+                                    font { family: FiliTheme.font; pixelSize: FiliTheme.sizeSmall }
                                 }
                                 Text {
                                     id: x1
-                                    anchors { right: parent.right; rightMargin: Theme.space1 + 2; verticalCenter: parent.verticalCenter }
+                                    anchors { right: parent.right; rightMargin: FiliTheme.space1 + 2; verticalCenter: parent.verticalCenter }
                                     text: "×"
-                                    color: Theme.muted
-                                    font { family: Theme.font; pixelSize: 14 }
+                                    color: FiliTheme.muted
+                                    font { family: FiliTheme.font; pixelSize: 14 }
                                     MouseArea { anchors { fill: parent; margins: -4 } onClicked: modelData.ctx ? Chat.ctxOn = false : Chat.detach(modelData.path) }
                                 }
                             }
@@ -390,20 +397,27 @@ Window {
                     // Input: Enter sends, Shift+Enter new line
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.margins: Theme.space2
-                        Layout.preferredHeight: Math.min(160, Math.max(40, input.contentHeight + Theme.space3))
-                        radius: Theme.radiusControl
-                        color: Theme.surface
-                        border { width: Theme.borderWidth; color: input.activeFocus ? Theme.accent : Theme.border }
+                        Layout.margins: FiliTheme.space2
+                        Layout.preferredHeight: Math.min(160, Math.max(40, input.contentHeight + FiliTheme.space3))
+                        radius: FiliTheme.radiusControl
+                        color: FiliTheme.surface
+                        border { width: FiliTheme.borderWidth; color: input.activeFocus ? FiliTheme.accentColor : FiliTheme.border }
                         TextEdit {
                             id: input
-                            anchors { fill: parent; margins: Theme.space2 }
+                            anchors { fill: parent; margins: FiliTheme.space2 }
                             wrapMode: TextEdit.Wrap
-                            color: Theme.text
-                            selectionColor: Theme.muted
-                            font { family: Theme.font; pixelSize: Theme.size }
+                            color: FiliTheme.text
+                            selectionColor: FiliTheme.muted
+                            font { family: FiliTheme.font; pixelSize: FiliTheme.size }
                             focus: true
                             Keys.onPressed: e => {
+                                // Ctrl+C copies what was selected in the conversation when the field has no selection of its own
+                                // (a Shortcut would never fire: an editable text keeps the copy keys for itself)
+                                if (e.matches(StandardKey.Copy) && input.selectedText === "" && Chat.picked !== "") {
+                                    Link.copyText(Chat.picked);
+                                    e.accepted = true;
+                                    return;
+                                }
                                 if ((e.key === Qt.Key_Return || e.key === Qt.Key_Enter) && !(e.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
                                     Chat.send(text);
                                     text = "";
@@ -417,7 +431,7 @@ Window {
             }
 
             // Debug panel (View > Debug Logs, Ctrl+Shift+L): the log of the window, above the bottom edge
-            DebugPanel {
+            FiliDebugPanel {
                 id: debug
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
                 open: Chat.debugOpen
@@ -426,20 +440,20 @@ Window {
             // Tooltip of a session of the rail (title and linked application), beside the rail
             Rectangle {
                 visible: rail.visible && rail.tipText !== "" && railHover.hovered
-                x: 52 + Theme.space1
-                y: Math.max(Theme.space1, Math.min(parent.height - height - Theme.space1, rail.tipY))
-                width: Math.min(tipLabel.implicitWidth + 2 * Theme.space2, parent.width - 52 - 2 * Theme.space1)
-                height: tipLabel.implicitHeight + 2 * Theme.space1
-                radius: Theme.radiusControl
-                color: Theme.surfaceHover
-                border { color: Theme.border; width: Theme.borderWidth }
+                x: 52 + FiliTheme.space1
+                y: Math.max(FiliTheme.space1, Math.min(parent.height - height - FiliTheme.space1, rail.tipY))
+                width: Math.min(tipLabel.implicitWidth + 2 * FiliTheme.space2, parent.width - 52 - 2 * FiliTheme.space1)
+                height: tipLabel.implicitHeight + 2 * FiliTheme.space1
+                radius: FiliTheme.radiusControl
+                color: FiliTheme.surfaceHover
+                border { color: FiliTheme.border; width: FiliTheme.borderWidth }
                 Text {
                     id: tipLabel
-                    anchors { fill: parent; margins: Theme.space1; leftMargin: Theme.space2; rightMargin: Theme.space2 }
+                    anchors { fill: parent; margins: FiliTheme.space1; leftMargin: FiliTheme.space2; rightMargin: FiliTheme.space2 }
                     text: rail.tipText
                     wrapMode: Text.Wrap
-                    color: Theme.text
-                    font { family: Theme.font; pixelSize: Theme.sizeList }
+                    color: FiliTheme.text
+                    font { family: FiliTheme.font; pixelSize: FiliTheme.sizeList }
                 }
             }
         }
@@ -447,7 +461,7 @@ Window {
         // Resize handle on the left edge: the right edge stays put, the width follows the pointer (double click: 440)
         MouseArea {
             anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
-            width: Theme.space1 + 4
+            width: FiliTheme.space1 + 4
             cursorShape: Qt.SizeHorCursor
             property real pressX: 0
             onPressed: m => pressX = m.x

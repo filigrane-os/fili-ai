@@ -48,26 +48,4 @@ pub fn tr(s: &str) -> String {
     catalog().get(s).cloned().unwrap_or_else(|| s.to_string())
 }
 
-#[cfg(test)]
-mod tests {
-    // Every text of the QML has an entry in the French catalog, and the catalog keeps no dead entry
-    #[test]
-    fn the_french_catalog_matches_the_qml() {
-        let root = env!("CARGO_MANIFEST_DIR");
-        let mut used = std::collections::BTreeSet::new();
-        for e in std::fs::read_dir(format!("{root}/qml")).unwrap() {
-            let text = std::fs::read_to_string(e.unwrap().path()).unwrap();
-            for part in text.split("Link.tr(\"").skip(1) {
-                let end = part.find("\")").or_else(|| part.find("\",")).unwrap_or(0);
-                used.insert(part[..end].to_string());
-            }
-        }
-        let cat: std::collections::BTreeMap<String, String> = serde_json::from_str(&std::fs::read_to_string(format!("{root}/i18n/fr.json")).unwrap()).unwrap();
-        for u in &used {
-            assert!(cat.contains_key(u), "no French entry for \"{u}\"");
-        }
-        for k in cat.keys() {
-            assert!(used.contains(k), "the French entry \"{k}\" is not used");
-        }
-    }
-}
+// The catalog against the texts of the QML and of the fili-ui kit: scripts/check-i18n.py (make check)

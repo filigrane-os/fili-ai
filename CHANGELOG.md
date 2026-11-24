@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- The interface controls (theme, buttons, scroll, debug panel, About card) come from the shared `fili-ui` kit instead of local copies.
+- The text of the conversation is selectable and copyable (select with the mouse, Ctrl+C), and can be pasted into the input.
+- The session rail no longer has a gap between the header and its first icon.
+
 ## 0.1.4
 
 - The bottom left corner of the session rail follows the rounded corner of the drawer.

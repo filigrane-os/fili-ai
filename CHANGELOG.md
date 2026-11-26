@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- In the drawer, Enter adds a line and Shift+Enter (or Ctrl+Enter) sends, as in every message composer of Filigrane. The small floating field (one line) still sends on Enter.
+
 ## 0.2.0
 
 - The interface controls (theme, buttons, scroll, debug panel, About card) come from the shared `fili-ui` kit instead of local copies.

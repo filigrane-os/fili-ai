@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2
+
+- The `fili-ui` kit is v0.7.1: a clearer selection (a translucent wash of the accent instead of grey steps) and a × at the top right
+  of the kit's dialogs, as in the other applications.
+
 ## 0.2.1
 
 - In the drawer, Enter adds a line and Shift+Enter (or Ctrl+Enter) sends, as in every message composer of Filigrane. The small floating field (one line) still sends on Enter.

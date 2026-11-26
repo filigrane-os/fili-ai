@@ -394,7 +394,7 @@ Window {
                         }
                     }
 
-                    // Input: Enter sends, Shift+Enter new line
+                    // Input: Enter makes a new line, Shift+Enter (or Ctrl+Enter) sends, as in every message composer of Filigrane
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.margins: FiliTheme.space2
@@ -418,7 +418,7 @@ Window {
                                     e.accepted = true;
                                     return;
                                 }
-                                if ((e.key === Qt.Key_Return || e.key === Qt.Key_Enter) && !(e.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
+                                if (Chat.sendsMessage(e.key, e.modifiers)) {
                                     Chat.send(text);
                                     text = "";
                                     e.accepted = true;

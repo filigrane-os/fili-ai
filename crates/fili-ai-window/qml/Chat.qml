@@ -383,6 +383,11 @@ QtObject {
         followPending = false;
         send_({ op: "new" });
     }
+    // The key that sends a message from the drawer's field, as in every message composer of Filigrane: Enter makes a new
+    // line, Shift+Enter (or Ctrl+Enter) sends
+    function sendsMessage(key, modifiers) {
+        return (key === Qt.Key_Return || key === Qt.Key_Enter) && (modifiers & (Qt.ShiftModifier | Qt.ControlModifier)) !== 0;
+    }
     function send(text) {
         let t = text.trim();
         if (!t && !attached.length)

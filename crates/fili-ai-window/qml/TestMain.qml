@@ -264,6 +264,12 @@ QtObject {
         // ───── agent ─────
         Chat.receive({ ev: "agent", ok: false });
         ok(Chat.agentOk === false, "agent: not installed");
+
+        // ───── keys of the field: Enter = new line, Shift+Enter or Ctrl+Enter = send ─────
+        ok(!Chat.sendsMessage(Qt.Key_Return, Qt.NoModifier) && !Chat.sendsMessage(Qt.Key_Enter, Qt.KeypadModifier), "keys: Enter makes a new line");
+        ok(Chat.sendsMessage(Qt.Key_Return, Qt.ShiftModifier) && Chat.sendsMessage(Qt.Key_Enter, Qt.ShiftModifier | Qt.KeypadModifier), "keys: Shift+Enter sends");
+        ok(Chat.sendsMessage(Qt.Key_Return, Qt.ControlModifier), "keys: Ctrl+Enter sends");
+        ok(!Chat.sendsMessage(Qt.Key_A, Qt.ShiftModifier), "keys: another key never sends");
         console.log("# end: " + failures + " failure(s) out of " + count);
         Qt.exit(failures === 0 ? 0 : 1);
     }
